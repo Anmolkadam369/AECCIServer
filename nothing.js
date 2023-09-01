@@ -50,3 +50,37 @@
 
 // })
 // module.exports = CreateCard
+
+
+
+
+// {
+//     "name": "projectsss",
+//     "version": "1.0.0",
+//     "description": "this is normal project",
+//     "main": "index.js",
+//     "scripts": {
+//       "test": "echo \"Error: no test specified\" && exit 1"
+//     },
+//     "keywords": [],
+//     "author": "",
+//     "license": "ISC",
+//     "dependencies": {
+//       "aws-sdk": "^2.1421.0",
+//       "axios": "^1.4.0",
+//       "bcrypt": "^5.1.0",
+//       "cors": "^2.8.5",
+//       "crypto": "^1.0.1",
+//       "dotenv": "^16.3.1",
+//       "express": "^4.18.2",
+//       "http": "^0.0.1-security",
+//       "jsonwebtoken": "^9.0.1",
+//       "mongoose": "^7.4.1",
+//       "multer": "^1.4.5-lts.1",
+//       "nodemailer": "^6.9.4",
+//       "nodemon": "^3.0.1",
+//       "stripe": "^12.17.0",
+//       "svg-captcha": "^1.4.0",
+//       "url": "^0.11.1"
+//     }
+//   }
