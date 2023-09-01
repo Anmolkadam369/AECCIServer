@@ -24,6 +24,8 @@ const registerAdmin = async ( req, res) =>{
     let {adminId ,fname, lname, profileImage, email, password} = adminData;
     
     adminId=adminData.adminId = "admin_"+generateRandomString(10);
+    profileImage = adminData.profileImage = req.image  ;
+
     
     if (!fname)
       return res.status(400).send({ status: false, message: "first name is mandatory" });
@@ -120,7 +122,7 @@ const loginAdmin = async(req,res)=>{
   if(!passwordCompare) 
     return res.status(404).send({status:false, message:"password doesn't match"});
     let token = jwt.sign(
-      {adminId : isAdminExists._id,  exp: Math.floor(Date.now() / 1000) + 86400}, "aeccisecurity");
+      {adminId : isAdminExists._id,  exp: Math.floor(Date.now() / 1000) + 604800 }, "aeccisecurity");
      let tokenInfo = { userId: isAdminExists._id, token: token };
       console.log(tokenInfo)
     res.setHeader('x-api-key', token)
@@ -154,34 +156,7 @@ const getCompanyDetailsForAdmin = async (req, res) => {
       return res.status(500).send({ status: false, message: error.message })
   }
 }
-// let count = 1001;
 
-// const generateMemberShipNo =  (selectMembership,membershipno) => {
-//     if (!membershipno) {
-//         let shortMemberShipName;
-//         console.log(selectMembership)
-//         if (selectMembership === "Small Business") shortMemberShipName = "SB";
-//         if (selectMembership === "Start- Up") shortMemberShipName = "SU";
-//         if (selectMembership === "Corporate") shortMemberShipName = "CORP";
-//         if (selectMembership === "Non Profit Org") shortMemberShipName = "NPO";
-//         if (selectMembership === "Overseas") shortMemberShipName = "OVR";
-//         if (selectMembership === "Corporate +") shortMemberShipName = "CORPP";
-//         console.log(count)
-//         count += count-count+1;
-//         console.log(count)
-
-//         let currentYear = new Date().getFullYear();
-//         let nextYear = (new Date().getFullYear()) + 1;
-
-//         let generatedMemberShipNo = `AECCI/${shortMemberShipName}/${count}/${currentYear}-${nextYear}`;
-//         console.log("here's your ticket no is ", generatedMemberShipNo)
-//        return generatedMemberShipNo;
-
-//     }
-//     else {
-//         return 'You have already generated the token';
-//     }
-// }
 const filledByAdmin = async (req, res)=>{
   try {
     let companyId = req.params.companyId;
@@ -189,22 +164,13 @@ const filledByAdmin = async (req, res)=>{
     let data = req.body;
     let {approved, reasonForNotchoosing}=data;
     
-    if(!approved) return res.status(400).send({ status: false, message: "please fill approved"});
     if (typeof approved != "boolean") return res.status(400).send({ status: false, message: "please provide approved in boolean " });
-    if (approved == "") return res.status(400).send({ status: false, message: "Please provide approved value" });
     approved = data.approved= approved;
     
     if(approved === false && !reasonForNotchoosing) return res.status(400).send({ status: false, message: "please put reason"});
     reasonForNotchoosing = data.reasonForNotchoosing= reasonForNotchoosing;
-    let companyInfo = await clientModel.findById(companyId)
-    if(approved === true && companyInfo.selectMembership !== "Digital User"){
-      console.log(companyInfo.memberShipNo)
-      memberShipNo = generateMemberShipNo(companyInfo.selectMembership,companyInfo.memberShipNo);
-      if(memberShipNo === 'You have already generated the token') return res.status(400).send({ status: false, message: "You have already generated the token" })
-      console.log(memberShipNo)
-      memberShipNo = data.memberShipNo= memberShipNo;
-  }
-      let clientCompanyDetails = await clientModel.findOneAndUpdate({_id:companyId},{$set:{memberShipNo:memberShipNo, validUpTo:validUpTo, approved:approved,reasonForNotchoosing:reasonForNotchoosing}},{new:true});
+
+      let clientCompanyDetails = await clientModel.findOneAndUpdate({_id:companyId},{$set:{approved:approved,reasonForNotchoosing:reasonForNotchoosing}},{new:true});
       if (!clientCompanyDetails) return res.status(404).send({ status: false, message: "No data found" });
       return res.status(200).send({ status: true, message: "Data updated successfully", data: clientCompanyDetails });
       

@@ -1,7 +1,8 @@
 let mongoose = require('mongoose')
 let superAdminModel = require("../models/superAdminModel");
 let jwt = require("jsonwebtoken");
-let bcrypt = require('bcrypt')
+let bcrypt = require('bcrypt');
+const clientModel = require('../models/clients/clientModel');
 //let validation = require("../validations/validation");
 function generateRandomString(length) {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -18,6 +19,7 @@ const registerSuperAdmin = async ( req, res) =>{
   try{
     let superAdminData = req.body;
     let {superAdminId , fname, lname, profileImage, email, password} = superAdminData;
+    profileImage = superAdminData.profileImage = req.image  ;
     
     superAdminId = superAdminData.superAdminId = "superAdmin_"+generateRandomString(10);
     
@@ -118,7 +120,7 @@ const loginSuperAdmin = async(req,res)=>{
   if(!passwordCompare) 
     return res.status(404).send({status:false, message:"password doesn't match"});
     let token = jwt.sign(
-      {adminId : isSuperAdminExists.email,  exp: Math.floor(Date.now() / 1000) + 86400}, "aeccisecuritysuperAdmin");
+      {superAdminId : isSuperAdminExists._id,  exp: Math.floor(Date.now() / 1000) + 604800}, "aeccisecurity");
      let tokenInfo = { userId: isSuperAdminExists._id, token: token };
 
     res.setHeader('x-api-key', token)
@@ -131,20 +133,27 @@ const loginSuperAdmin = async(req,res)=>{
   }
 }
 
-const getCompanyDetailsForsuperAdmin = async (req, res) => {
-  try {
-      let clientId = req.params;
-      if (!clientId) return res.status(400).send({ status: false, message: "Please Enter clientId value" });
-      let clientCompanyDetails = await clientModel.findById(clientId);
-      if (!clientCompanyDetails) return res.status(404).send({ status: false, message: "No data found" });
-     
-      
-      return res.status(200).send({ status: true, message: "here's company Details", data: clientCompanyDetails });
+const getSuperAdminDetails = async (req,res)=>{
+  try{
+      let superAdminId = req.superAdminId;
+      let superAdminData = await superAdminModel.findById(superAdminId);
+      return res.status(200).send({status: true, message: "get superAdmin data", data: superAdminData})
   }
-  catch (error) {
-      return res.status(500).send({ status: false, message: error.message })
+  catch(error){
+    return res.status(500).send({status: false, message: error.message})
   }
 }
+
+const getCompanyDetailsForsuperAdmin = async (req, res) => {
+    try {
+        let clientCompanyDetails = await clientModel.find({approved:true});
+        if (clientCompanyDetails.length === 0) return res.status(404).send({ status: false, message: "No data found" });
+        return res.status(200).send({ status: true, message: "here's company Details", data: clientCompanyDetails });
+    }
+    catch (error) {
+        return res.status(500).send({ status: false, message: error.message })
+    }
+  }
 
 // const filledBysuperAdmin = async (req, res)=>{
 //   try {
@@ -167,6 +176,8 @@ const getCompanyDetailsForsuperAdmin = async (req, res) => {
 
 let count = 1001;
 
+
+
 const generateMemberShipNo =  (selectMembership,membershipno) => {
     if (!membershipno) {
         let shortMemberShipName;
@@ -175,16 +186,32 @@ const generateMemberShipNo =  (selectMembership,membershipno) => {
         if (selectMembership === "Start- Up") shortMemberShipName = "SU";
         if (selectMembership === "Corporate") shortMemberShipName = "CORP";
         if (selectMembership === "Non Profit Org") shortMemberShipName = "NPO";
-        if (selectMembership === "Overseas") shortMemberShipName = "OVR";
-        if (selectMembership === "Corporate +") shortMemberShipName = "CORPP";
+        if (selectMembership === "Overseas") shortMemberShipName = "OS";
+        if (selectMembership === "Corporate +") shortMemberShipName = "CORP+";
         console.log(count)
         count += count-count+1;
         console.log(count)
 
+        const changes=(year)=>{
+          const myArray = year.split('')
+          myArray.shift();
+          myArray.shift();
+          const myString = myArray.join('')
+            return myString;
+          }
+
         let currentYear = new Date().getFullYear();
         let nextYear = (new Date().getFullYear()) + 1;
+        currentYear = currentYear.toString()
+        nextYear = nextYear.toString()
+        currentYear = changes(currentYear)
+        nextYear = changes(nextYear)
 
-        let generatedMemberShipNo = `AECCI/${shortMemberShipName}/${count}/${currentYear}-${nextYear}`;
+       
+
+        // let generatedMemberShipNo = `AECCI/${shortMemberShipName}/${count}/${currentYear}-${nextYear}`;
+        let generatedMemberShipNo = `${shortMemberShipName}${currentYear}${nextYear}-${count}`;
+        
         console.log("here's your ticket no is ", generatedMemberShipNo)
        return generatedMemberShipNo;
 
@@ -206,9 +233,7 @@ const filledBysuperAdmin = async (req, res)=>{
     if (validUpTo == "") return res.status(400).send({ status: false, message: "Please provide validUpTo value" });
     validUpTo = data.validUpTo= validUpTo;
     
-    if(!approvedBySuperAdmin) return res.status(400).send({ status: false, message: "please fill approvedBySuperAdmin"});
     if (typeof approvedBySuperAdmin != "boolean") return res.status(400).send({ status: false, message: "please provide approvedBySuperAdmin in boolean " });
-    if (approvedBySuperAdmin == "") return res.status(400).send({ status: false, message: "Please provide approvedBySuperAdmin value" });
     approvedBySuperAdmin = data.approvedBySuperAdmin= approvedBySuperAdmin;
     
     let companyInfo = await clientModel.findById(companyId)
@@ -219,7 +244,7 @@ const filledBysuperAdmin = async (req, res)=>{
       console.log(memberShipNo)
       memberShipNo = data.memberShipNo= memberShipNo;
   }
-      let clientCompanyDetails = await clientModel.findOneAndUpdate({_id:companyId},{$set:{memberShipNo:memberShipNo, validUpTo:validUpTo, approvedBySuperAdmin:approvedBySuperAdmin,reasonForNotchoosing:reasonForNotchoosing}},{new:true});
+      let clientCompanyDetails = await clientModel.findOneAndUpdate({_id:companyId},{$set:{memberShipNo:memberShipNo, validUpTo:validUpTo, approvedBySuperAdmin:approvedBySuperAdmin}},{new:true});
       if (!clientCompanyDetails) return res.status(404).send({ status: false, message: "No data found" });
       return res.status(200).send({ status: true, message: "Data updated successfully", data: clientCompanyDetails });
       
@@ -227,5 +252,5 @@ const filledBysuperAdmin = async (req, res)=>{
     return res.status(500).send({ status: false, message: error.message })
   }
 }
-module.exports = {registerSuperAdmin, loginSuperAdmin,getCompanyDetailsForsuperAdmin,filledBysuperAdmin};
+module.exports = {registerSuperAdmin, loginSuperAdmin,getSuperAdminDetails,getCompanyDetailsForsuperAdmin,filledBysuperAdmin};
   

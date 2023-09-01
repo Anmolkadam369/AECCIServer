@@ -27,7 +27,7 @@ let uploadFile = async (file) => {
     });
 };
 
-const awsLinkEmployeeProfile = async (req, res, next) => {
+const awsLinkProfile = async (req, res, next) => {
     try {
         let profileImage = req.files;
         if (profileImage) {
@@ -59,4 +59,4 @@ const awsLinkEmployeeSignature = async (req, res, next) => {
     catch (err) { return res.status(500).send({ status: false, error: err.message }) }
 }
 
-module.exports = { awsLinkEmployeeProfile, awsLinkEmployeeSignature}
+module.exports = { awsLinkProfile, awsLinkEmployeeSignature}

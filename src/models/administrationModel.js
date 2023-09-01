@@ -10,7 +10,7 @@ const administrationSchema = new mongoose.Schema({
   
   profileImage: {    //staffPhoto if there is any
         type: String,
-        required: true,
+        // required: true,
         trim: true
    },
   departmentName:{
@@ -25,7 +25,8 @@ const administrationSchema = new mongoose.Schema({
   },
   employeeId : {
     type: String,
-    required: true
+    required: true,
+    unique:true
   },
   designation:{
     type:String,

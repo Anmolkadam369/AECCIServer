@@ -26,11 +26,11 @@ const employeeJdSchema = new mongoose.Schema({
     },
     today:{
         type: String,  
-        required:true
+        // required:true
     },
     timeIn : {
         type: String,  
-        required:true
+        default:"00:00"
     },
     jobRole : {
         type:String,
@@ -43,6 +43,9 @@ const employeeJdSchema = new mongoose.Schema({
     logOut:{
         type:String,
         default:"00:00"
+    },
+    requestDone:{
+        type:Boolean
     },
     preparedBy : {       
         //get data through reference and populate

@@ -17,6 +17,7 @@ const auth = require("../middleware/auth");
 const aws = require("../middleware/aws")
 const clientAuth = require("../middleware/clientAuth")
 const adminAuth = require("../middleware/adminAuth")
+const superAdminAuth = require("../middleware/superadminAuth")
 
 // const auth = require('../middlewares/auth')
 //const aws = require("../middlewares/awsLink");
@@ -28,11 +29,8 @@ router.get("/test-me", function(req,res){
 //MASTER
 router.get("/loginMaster", masterController.loginMaster);
 
-
-
-
 //ADMIN
-router.post("/registerAdmin",  adminController.registerAdmin);
+router.post("/registerAdmin", aws.awsLinkProfile, adminController.registerAdmin);
 router.post("/loginAdmin", adminController.loginAdmin);
 router.get("/getAdminDetails/:adminId",adminAuth.authentication,adminAuth.authorization, adminController.getAdminDetails)  //myaccount
 router.get("/getCompanyDetailsForAdmin/:adminId",adminAuth.authentication,adminAuth.authorization,adminController.getCompanyDetailsForAdmin)
@@ -40,39 +38,11 @@ router.post("/filledByAdmin/:adminId/:companyId",adminAuth.authentication,adminA
 router.post("/adminApprovedRequest/:changePasswordId",adminAuth.authentication,adminAuth.authorization, adminController.adminChangedPassword);
 
 //SUPERADMIN
-router.post("/registerSuperAdmin",  superAdminController.registerSuperAdmin);
-router.get("/loginSuperAdmin",superAdminController.loginSuperAdmin);
-
-//Employee
-router.post("/registerAdministration",aws.awsLinkEmployeeProfile,aws.awsLinkEmployeeSignature, administrationController.registerAdministration);
-router.post("/loginAdministration", administrationController.loginAdministration)
-router.post("/loginHR", administrationController.loginHR)
-router.get("/getMyaccount/:employeeId", auth.authentication,administrationController.getMyaccount);
-// router.get("/getWantedAdministrationList/:employeeId", administrationController.getWantedAdministrationList);
-router.put("/updateInfo/:paramsId", administrationController.updateInfo);
-// router.delete("/deleteEmployee/:employeeId", administrationController.deleteEmployee);
-
-// NOT DONE YET
-router.post ("/administration/forgotPassword", administrationController.forgotPasword)
-router.get ("/administration/resetPassword/:token", administrationController.resetPassword)
-
-// JD 
-//for first Time clicking
-router.post("/createEmployeeJd/:employeeId",auth.authentication,auth.authorization, employeeJdController.createEmployeeJd );
-//for next Line of JD
-router.post("/createAnotherOne/:employeeId",auth.authentication,auth.authorization,employeeJdController.createEmployeeJdForNextTime )
-router.post ("/logOutJd/:employeeId/:jdId",auth.authentication,auth.authorization, employeeJdController.logOut);
-router.post("/thirtyMin/:employeeId/:jdId",auth.authentication,auth.authorization, employeeJdController.thirtyMinTimesUp);
-router.post("/fifteenMin/:employeeId/:jdId",auth.authentication,auth.authorization, employeeJdController.fifteenMinTimesUp);
-
- 
-
-//HR 
-router.post("/extendedTime/:employeeId/:normalEmployee",auth.authentication,auth.authorization,employeeJdController.extendTime);
-// router.get("/getWantedAdministrationList/:employeeId/:normalEmployee",auth.authentication,auth.authorizationForHr,employeeJdController.getWantedAdministrationList);
-// router.get("/getWantedListByDate/:employeeId/:normalEmployee",auth.authentication,auth.authorizationForHr,employeeJdController.getWantedListByDate)
-
-
+router.post("/registerSuperAdmin", aws.awsLinkProfile,superAdminController.registerSuperAdmin);
+router.post("/loginSuperAdmin",superAdminController.loginSuperAdmin);
+router.get ("/getSuperAdminDetails/:superAdminId",superAdminAuth.authentication,superAdminAuth.authorization,superAdminController.getSuperAdminDetails);
+router.get ("/getCompanyDetailsForsuperAdmin/:superAdminId",superAdminAuth.authentication,superAdminAuth.authorization,superAdminController.getCompanyDetailsForsuperAdmin);
+router.post ("/filledBysuperAdmin/:superAdminId/:companyId",superAdminAuth.authentication,superAdminAuth.authorization,superAdminController.filledBysuperAdmin);
 
 
 //client 
@@ -110,21 +80,9 @@ router.get("/previewData/:wingsId",wingsController.previewData);
 router.post("/getTickectNo/:wingsId", wingsController.generateTicketNo)
 router.post("/sendMail/:companyId/:wingsId",wingsController.sendingMailToUser)
 
-
-
-
 //Client B2B collaboration
 
 router.post ("/clientB2BColloboration/:clientId", B2BRegistration.clientB2BColloboration )
-
-
-
-
-
-
-
-
-
 
 
 //MEMBER SHIP SERVICES
@@ -132,6 +90,71 @@ router.post("/membershipservices/:clientId", memberShipServices.memberShipServic
 
 
 
+
+//Employee
+router.post("/registerAdministration",aws.awsLinkProfile,aws.awsLinkEmployeeSignature,administrationController.registerAdministration);
+router.post("/loginAdministration", administrationController.loginAdministration)
+router.post("/loginHR", administrationController.loginHR)
+router.get("/getMyaccount/:employeeId", auth.authentication,administrationController.getMyaccount);
+router.post ("/administration/forgotPassword", administrationController.forgotPasword)
+router.get ("/administration/resetPassword/:token", administrationController.resetPassword)
+
+// JD 
+//for first Time clicking
+router.post("/createEmployeeJd/:employeeId",auth.authentication,auth.authorization, employeeJdController.createEmployeeJd );
+//for next Line of JD
+// router.post("/createAnotherOne/:employeeId",auth.authentication,auth.authorization,employeeJdController.createEmployeeJdForNextTime )
+router.post("/requestForExtend/:employeeId/:jdId",auth.authentication,auth.authorization, employeeJdController.requestForExtend);
+router.post ("/logOutJd/:employeeId/:jdId",auth.authentication,auth.authorization, employeeJdController.logOut);
+// router.post("/thirtyMin/:employeeId/:jdId",auth.authentication,auth.authorization, employeeJdController.thirtyMinTimesUp);
+// router.post("/fifteenMin/:employeeId/:jdId",auth.authentication,auth.authorization, employeeJdController.fifteenMinTimesUp);
+
+//HR 
+router.post("/giveDataOfEmployee/:employeeId",auth.authentication,auth.authorizationForHr,employeeJdController.giveDataOfEmployee)
+router.get("/getAllEmpData/:employeeId",auth.authentication,auth.authorizationForHr,administrationController.getEmpData);
+router.put("/updateInfo/:employeeId/:normalEmployee",auth.authentication,auth.authorizationForHr, administrationController.updateInfo);
+// router.post("/extendedTime/:employeeId/:normalEmployee",auth.authentication,auth.authorizationForHr,employeeJdController.extendTime);
+router.post("/extendByHr/:employeeId",auth.authentication,auth.authorizationForHr,employeeJdController.extendByHr)
+router.get("/getWantedAdministrationList/:employeeId/:normalEmployee",auth.authentication,auth.authorizationForHr,employeeJdController.getWantedAdministrationList);
+router.get("/getWantedListByDate/:employeeId/:normalEmployee",auth.authentication,auth.authorizationForHr,employeeJdController.getWantedListByDate)
+router.get("/getExtendData/:employeeId", auth.authentication, auth.authorizationForHr,employeeJdController.getExtendData); 
+router.delete("/deleteEmp/:employeeId/:normalEmployee",auth.authentication,auth.authorizationForHr,administrationController.deleteEmployee)
+
 const payment = require('../controllers/practice');
 // router.post('/create-payment-intent', payment.createPaymentIntent)
 module.exports = router;
+
+
+
+
+
+
+//Employee
+// router.post("/registerAdministration",aws.awsLinkProfile,aws.awsLinkEmployeeSignature, administrationController.registerAdministration);
+// router.post("/loginAdministration", administrationController.loginAdministration)
+// router.post("/loginHR", administrationController.loginHR)
+// router.get("/getMyaccount/:employeeId", auth.authentication,administrationController.getMyaccount);
+// // router.get("/getWantedAdministrationList/:employeeId", administrationController.getWantedAdministrationList);
+// router.put("/updateInfo/:paramsId", administrationController.updateInfo);
+// // router.delete("/deleteEmployee/:employeeId", administrationController.deleteEmployee);
+
+// // NOT DONE YET
+// router.post ("/administration/forgotPassword", administrationController.forgotPasword)
+// router.get ("/administration/resetPassword/:token", administrationController.resetPassword)
+
+// // JD 
+// //for first Time clicking
+// router.post("/createEmployeeJd/:employeeId",auth.authentication,auth.authorization, employeeJdController.createEmployeeJd );
+// //for next Line of JD
+// router.post("/createAnotherOne/:employeeId",auth.authentication,auth.authorization,employeeJdController.createEmployeeJdForNextTime )
+// router.post ("/logOutJd/:employeeId/:jdId",auth.authentication,auth.authorization, employeeJdController.logOut);
+// router.post("/thirtyMin/:employeeId/:jdId",auth.authentication,auth.authorization, employeeJdController.thirtyMinTimesUp);
+// router.post("/fifteenMin/:employeeId/:jdId",auth.authentication,auth.authorization, employeeJdController.fifteenMinTimesUp);
+
+ 
+
+// //HR 
+// router.post("/extendedTime/:employeeId/:normalEmployee",auth.authentication,auth.authorization,employeeJdController.extendTime);
+// // router.get("/getWantedAdministrationList/:employeeId/:normalEmployee",auth.authentication,auth.authorizationForHr,employeeJdController.getWantedAdministrationList);
+// // router.get("/getWantedListByDate/:employeeId/:normalEmployee",auth.authentication,auth.authorizationForHr,employeeJdController.getWantedListByDate)
+

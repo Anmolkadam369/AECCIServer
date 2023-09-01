@@ -27,7 +27,7 @@ const registerAdministration = async (req, res)=>{
 administrationId = registerAdministrationInfo.administrationId = "emp_"+generateRandomString(10); 
     //_______________________________Extarnal Data_________________________________________________
     
-    profileImage = registerAdministrationInfo.profileImage = req.image;
+    profileImage = registerAdministrationInfo.profileImage = req.image  ;
     signature = registerAdministrationInfo.signature = req.image;
     let dated = new Date().getDate()
     let month = String(new Date().getMonth()+1)
@@ -47,44 +47,6 @@ administrationId = registerAdministrationInfo.administrationId = "emp_"+generate
     if(typeof(departmentName) != "string")
       return res.status(400).send({status: false, message: "departmentName should be in String"});
     
-    // let expectedValues = ["Adminstration","HR Department", "co Department","Membership Department", "wings Department", "Accounts Department", "publications", "Miscellaneous"];
-    
-  //  let answers = departmentName
-  //  console.log("answers ", answers)
-  //   let count = 0;
-  //   for(let i=0; i<expectedValues.length; i++){
-  //     console.log(expectedValues[i]);
-  //     if(expectedValues[i]==departmentName)
-  //       count++;
-  //   }
-  //   console.log("count ", count)
-  //   if(count != 1) return res.status(400).send({status:false, message:"please provide correct information 111111."});
-  //   let values = [];
-    // if(departmentName == "Adminstration"){
-    //   values = [];
-    // }
-    // if(departmentName == "HR Department"){
-    //   values = [];
-    // }
-    // if(departmentName == "co Department"){
-    //   values = ["Billing","Document Checking","e-platform","Attestation"];
-    // }
-    // if(departmentName == "Membership Department"){
-    //   values = [];
-    // }
-    // if(departmentName == "wings Department"){
-    //   values = ["Recruit candidates", "Hire the right employees", "Conduct disciplinary actions","Update policies","Maintain employee records", "On Boarding New Employees" ];
-    // }
-    // if(departmentName == "Accounts Department"){
-    //   values = ["Tally","Payment Follow Up","Ledger","Billing"];
-    // }
-    // if(departmentName == "publications"){
-    //   values = ["Daily Newsletter","Weekly Newsletter","Quarterly Newsletter", "Designing"];
-    // }
-    // if(departmentName == "Miscellaneous"){
-    //   values = [];
-    // }
-    //______________________________
 
     if(!officerName) 
       return res.status(400).send({status: false, message: "officerName is required"});
@@ -207,7 +169,6 @@ const loginAdministration = async(req,res,next)=>{
     if (password == "")
       return res.status(400).send({ status: false, message: "Please provide password value" });
 
-
     //regex password
     // if (!validation.validatePassword(password))
       // return res.status(400).send({ status: false, message: "8-15 characters, one lowercase letter, one number and maybe one UpperCase & one special character" });
@@ -232,14 +193,15 @@ console.log("email", email)
       {administrationId : isAdministrationExist._id,  exp: Math.floor(Date.now() / 1000) + 86400}, "aeccisecurity");
      let tokenInfo = { userId: isAdministrationExist._id, token: token };
      console.log(tokenInfo);
-    tokenInfo = bcrypt.hashSync(tokenInfo, 10);
-    console.log(tokenInfo,"hey");
+
 
     res.setHeader('x-api-key', token)
         //__________________________________________________________________
 
         if(isAdministrationExist.emailId == "hr@aecci.org.in")
-        next()
+      return res.status(400).send({status:false, message:"you cannot logged in from here !!!!"})
+
+        // next()
             
       //__________________________________________________________________
       console.log("tokenInfo", tokenInfo)
@@ -301,7 +263,9 @@ console.log("email", email)
       {administrationId : isAdministrationExist._id,  exp: Math.floor(Date.now() / 1000) + 86400}, "aeccisecurity");
      let tokenInfo = { userId: isAdministrationExist._id, token: token };
      console.log(tokenInfo);
-     
+    //  tokenInfo = bcrypt.hashSync(tokenInfo, 10);
+    //  console.log(tokenInfo,"hey");
+
     res.setHeader('x-api-key', token)
         //__________________________________________________________________
 
@@ -333,7 +297,7 @@ const getEmpData = async(req,res)=>{
 const getMyaccount = async (req,res)=>{
   const employeeId = req.params.employeeId;
     console.log(employeeId)
-  let getInfo = await administrationModel.findById(employeeId);
+  let getInfo = await administrationModel.findOne({administrationId:employeeId});
   if(!getInfo)return res.status(400).send({status: false, message:"No user Found"});
   res.status(200).send({status:true, message:`${getInfo.officerName} 's information !`, data : getInfo })
 }
@@ -545,7 +509,8 @@ const deleteEmployee = async (req, res)=>{
     let isEmployeeExist = await administrationModel.findOne({administrationId : empolyeeId});
     if(!isEmployeeExist) return res.status(404).send({ status: false, message: "Employee doesn't exists"});
     if(isEmployeeExist.isDeleted == true) return res.status(400).send({ status: false, message: "Employee is Already Deleted"});
-      let getInfo = await administrationModel.findOneAndUpdate({administrationId : empolyeeId, isDeleted:false },{$set:{isDeleted:true, deletedAt : Date.now()}},{new:true});
+    if(isEmployeeExist.emailId == "hr@aecci.org.in") return res.status(400).send({ status: false, message: "You cannot Delete these Data"});
+    let getInfo = await administrationModel.findOneAndUpdate({administrationId : empolyeeId, isDeleted:false },{$set:{isDeleted:true, deletedAt : Date.now()}},{new:true});
      console.log(getInfo)
       return res.status(200).send({ status: true, message: "success", message: "deleted successfully " , data: getInfo})
   } catch (error) {
