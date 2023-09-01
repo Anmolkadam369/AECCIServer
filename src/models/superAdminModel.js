@@ -1,6 +1,11 @@
 const mongoose = require('mongoose')
 
 const superAdminSchema = new mongoose.Schema({
+    superAdminId : {
+        type: String,
+        required: true,
+        trim: true  
+    },
     fname: {
         type: String,
         required: true,

@@ -3,13 +3,13 @@ const clientModel = require('../../models/clients/clientModel');
 const bcrypt = require('bcrypt');
 const clientPasswordChangeModel = require('../../models/clients/clientPasswordChangeModel');
 const comercialDirectory = require('../../models/clients/comercialDirectory');
-
+const jwt = require("jsonwebtoken")
 
 
 const createClient = async (req, res) => {
     try {
         let clientsAllData = req.body;
-        let { selectMembership, companyName, GSTNo, IECNo, websiteAdd, address1, address2, address3, address4, country, state, pinCode, businessCategory, howDidYouKnowAboutUs, title, firstName, surName, role, email, password, confirmPassword, telephoneNo, phoneNo, registeredBank, branchDetails, modeOfCommunication } = clientsAllData;
+        let { selectMembership, companyName, inputNumber, websiteAdd, address1, address2, address3, address4, country, state, pinCode, businessCategory, howDidYouKnowAboutUs, title, firstName, surName, role, email, password, confirmPassword, telephoneNo, phoneNo, registeredBank, branchDetails, modeOfCommunication } = clientsAllData;
         //_______________selectMembership____________________
         if (!selectMembership)
             return res.status(400).send({ status: false, message: "companyName is required" });
@@ -21,21 +21,6 @@ const createClient = async (req, res) => {
 
         if (typeof (selectMembership) != "string")
             return res.status(400).send({ status: false, message: "selectMembership should be in String" });
-
-        let expectedValues = ["Small Business", "Start- Up", "Corporate", "Non Profit Org", "Overseas", "Corporate +", "Digital User"];
-
-        //show benefits to the user according to the choice
-
-        let answers = selectMembership
-        console.log("answers ", answers)
-        let count = 0;
-        for (let i = 0; i < expectedValues.length; i++) {
-            console.log(expectedValues[i]);
-            if (expectedValues[i] == selectMembership)
-                count++;
-        }
-        console.log("count ", count)
-        if (count != 1) return res.status(400).send({ status: false, message: "please provide correct information 111111." });
 
         //______________companyName________________
 
@@ -50,8 +35,15 @@ const createClient = async (req, res) => {
 
         //_________________GSTNo_____________
 
+        
+        if (!inputNumber)
+            return res.status(400).send({ status: false, message: "inputNumber is required" });
 
-        //_________________IECNo_____________
+        if (typeof (inputNumber) != "string")
+            return res.status(400).send({ status: false, message: "inputNumber should be in String" });
+
+        if (inputNumber == "")
+            return res.status(400).send({ status: false, message: "Please Enter inputNumber value" });
 
         //_________________websiteAdd_____________
 
@@ -323,7 +315,17 @@ const createClient = async (req, res) => {
 
         if (branch == "")
             return res.status(400).send({ status: false, message: "Please Enter branch value" });
+        
+        let ifsc = branchDetails.IFSCCode;
+        if (!ifsc)
+            return res.status(400).send({ status: false, message: "ifsc is required" });
 
+        if (typeof (ifsc) != "string")
+            return res.status(400).send({ status: false, message: "ifsc should be in String" });
+
+        if (ifsc == "")
+            return res.status(400).send({ status: false, message: "Please Enter ifsc value" });
+        
 
         if (!modeOfCommunication)
             return res.status(400).send({ status: false, message: "modeOfCommunication is required" });
@@ -380,13 +382,13 @@ const loginClient = async (req, res) => {
         let passwordCompare = await bcrypt.compare(password, isClientExists.password)
         if (!passwordCompare)
             return res.status(404).send({ status: false, message: "password doesn't match" });
+        console.log(isClientExists._id)
         let token = jwt.sign(
-            { clientId: isClientExists.email, exp: Math.floor(Date.now() / 1000) + 86400 }, "aeccisecurity");
+            { clientId: isClientExists._id, exp: Math.floor(Date.now() / 1000) + 86400 }, "aeccisecurity");
         let tokenInfo = { userId: isClientExists._id, token: token };
 
-        res.setHeader('x-api-key', token)
 
-        return res.status(200).send({ status: true, message: "Admin login successfully", data: tokenInfo });
+        return res.status(200).send({ status: true, message: "Admin login successfully",info:isClientExists, data: tokenInfo });
     }
 
     catch (error) {
@@ -394,13 +396,23 @@ const loginClient = async (req, res) => {
     }
 }
 
+const logoutClient = async (req,res)=>{
+    try{
+        return res.status(200).send({ status: true, message: "logged out successfully !!!" });
+    }
+    catch(error){
+        return res.status(500).send({ status: false, message: error.message })
+    }
+}
+
 const getCompanyDetails = async (req, res) => {
     try {
-        let clientId = req.params;
+        let clientId = req.params.clientId;
         if (!clientId)
             return res.status(400).send({ status: false, message: "Please Enter clientId value" });
 
         let clientCompanyDetails = await clientModel.findById(clientId).select({ _id: 0, companyName: 1, GSTNo: 1, IECNo: 1, websiteAdd: 1, address1: 1, address2: 1, address3: 1, address4: 1, country: 1, state: 1, pinCode: 1, businessCategory: 1, howDidYouKnowAboutUs: 1 });
+        console.log(clientCompanyDetails)
         if (!clientCompanyDetails)
             return res.status(404).send({ status: false, message: "No data found" });
 
@@ -413,11 +425,12 @@ const getCompanyDetails = async (req, res) => {
 
 const getClientPersonalInfo = async (req, res) => {
     try {
-        let clientId = req.params;
+        let clientId = req.params.clientId;
         if (!clientId)
             return res.status(400).send({ status: false, message: "Please Enter clientId value" });
 
         let clientPersonalDetails = await clientModel.findById(clientId).select({ _id: 0, title: 1, firstName: 1, surName: 1, role: 1, email: 1, password: 1, confirmPassword: 1, telephoneNo: 1, phoneNo: 1, registeredBank: 1, branchDetails: 1 });
+       console.log(clientPersonalDetails)
         if (!clientPersonalDetails)
             return res.status(404).send({ status: false, message: "No data found" });
 
@@ -496,6 +509,7 @@ const commercialDir = async (req, res) => {
         let isAvailable = await clientModel.findById(id);
         if (!isAvailable)
             return res.status(404).send({ status: false, message: "no data found " })
+        if(isAvailable.selectMembership === "Digital User") return res.status(400).send({ status: false, message: "Members Only!!!" })
         let dirInfo = req.body;
         let { companyLogo, companyName, ownersName, email, establishmentYear, companyAdd, mobileNo, companyProduct, companyActivity } = dirInfo;
 
@@ -852,4 +866,4 @@ const updatePersonalDetails = async (req, res) => {
 
 
 
-module.exports = { createClient, loginClient, getCompanyDetails, getClientPersonalInfo, changePassword, commercialDir, updateCompanyDetails, updatePersonalDetails };
+module.exports = { createClient, loginClient,logoutClient, getCompanyDetails, getClientPersonalInfo, changePassword, commercialDir, updateCompanyDetails, updatePersonalDetails };

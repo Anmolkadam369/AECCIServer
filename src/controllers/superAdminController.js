@@ -3,10 +3,25 @@ let superAdminModel = require("../models/superAdminModel");
 let jwt = require("jsonwebtoken");
 let bcrypt = require('bcrypt')
 //let validation = require("../validations/validation");
+function generateRandomString(length) {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    result += characters.charAt(randomIndex);
+  }
+  return result;
+}
+
+
 const registerSuperAdmin = async ( req, res) =>{
   try{
     let superAdminData = req.body;
-    let {fname, lname, profileImage, email, password} = superAdminData;
+    let {superAdminId , fname, lname, profileImage, email, password} = superAdminData;
+    
+    superAdminId = superAdminData.superAdminId = "superAdmin_"+generateRandomString(10);
+    
+    
     if (!fname)
       return res.status(400).send({ status: false, message: "first name is mandatory" });
 
@@ -131,19 +146,83 @@ const getCompanyDetailsForsuperAdmin = async (req, res) => {
   }
 }
 
+// const filledBysuperAdmin = async (req, res)=>{
+//   try {
+//     let clientId = req.params;
+//     let data = req.body;
+//     let {approvedBySuperAdminBySuperAdmin}=data;
+      
+//       if(approvedBySuperAdmin){
+//        approvedBySuperAdmin  = data.approvedBySuperAdmin = approvedBySuperAdmin ;
+//       if (!clientId) return res.status(400).send({ status: false, message: "Please Enter clientId value" });
+//       let clientCompanyDetails = await clientModel.findOneAndUpdate({_id:clientId},{$set:{approvedBySuperAdmin:approvedBySuperAdmin}},{new:true});
+//       if (!clientCompanyDetails) return res.status(404).send({ status: false, message: "No data found" });
+//       return res.status(200).send({ status: true, message: "Data updated successfully", data: clientCompanyDetails });
+//       }
+//   } catch (error) {
+//     return res.status(500).send({ status: false, message: error.message })
+//   }
+// }
+
+
+let count = 1001;
+
+const generateMemberShipNo =  (selectMembership,membershipno) => {
+    if (!membershipno) {
+        let shortMemberShipName;
+        console.log(selectMembership)
+        if (selectMembership === "Small Business") shortMemberShipName = "SB";
+        if (selectMembership === "Start- Up") shortMemberShipName = "SU";
+        if (selectMembership === "Corporate") shortMemberShipName = "CORP";
+        if (selectMembership === "Non Profit Org") shortMemberShipName = "NPO";
+        if (selectMembership === "Overseas") shortMemberShipName = "OVR";
+        if (selectMembership === "Corporate +") shortMemberShipName = "CORPP";
+        console.log(count)
+        count += count-count+1;
+        console.log(count)
+
+        let currentYear = new Date().getFullYear();
+        let nextYear = (new Date().getFullYear()) + 1;
+
+        let generatedMemberShipNo = `AECCI/${shortMemberShipName}/${count}/${currentYear}-${nextYear}`;
+        console.log("here's your ticket no is ", generatedMemberShipNo)
+       return generatedMemberShipNo;
+
+    }
+    else {
+        return 'You have already generated the token';
+    }
+}
 const filledBysuperAdmin = async (req, res)=>{
   try {
-    let clientId = req.params;
+    let companyId = req.params.companyId;
+    if (!companyId) return res.status(400).send({ status: false, message: "Please Enter companyId value" });
     let data = req.body;
-    let {approvedBySuperAdmin}=data;
+    let {memberShipNo, validUpTo, approvedBySuperAdmin}=data;
       
-      if(approvedBySuperAdmin){
-       approvedBySuperAdmin  = data.approvedBySuperAdmin = approvedBySuperAdmin ;
-      if (!clientId) return res.status(400).send({ status: false, message: "Please Enter clientId value" });
-      let clientCompanyDetails = await clientModel.findOneAndUpdate({_id:clientId},{$set:{approvedBySuperAdmin:approvedBySuperAdmin}},{new:true});
+    
+    if(!validUpTo) return res.status(400).send({ status: false, message: "please fill validUpTo"});
+    if (typeof validUpTo != "string") return res.status(400).send({ status: false, message: "please provide validUpTo in string " });
+    if (validUpTo == "") return res.status(400).send({ status: false, message: "Please provide validUpTo value" });
+    validUpTo = data.validUpTo= validUpTo;
+    
+    if(!approvedBySuperAdmin) return res.status(400).send({ status: false, message: "please fill approvedBySuperAdmin"});
+    if (typeof approvedBySuperAdmin != "boolean") return res.status(400).send({ status: false, message: "please provide approvedBySuperAdmin in boolean " });
+    if (approvedBySuperAdmin == "") return res.status(400).send({ status: false, message: "Please provide approvedBySuperAdmin value" });
+    approvedBySuperAdmin = data.approvedBySuperAdmin= approvedBySuperAdmin;
+    
+    let companyInfo = await clientModel.findById(companyId)
+    if(approvedBySuperAdmin === true && companyInfo.selectMembership !== "Digital User"){
+      console.log(companyInfo.memberShipNo)
+      memberShipNo = generateMemberShipNo(companyInfo.selectMembership,companyInfo.memberShipNo);
+      if(memberShipNo === 'You have already generated the token') return res.status(400).send({ status: false, message: "You have already generated the token" })
+      console.log(memberShipNo)
+      memberShipNo = data.memberShipNo= memberShipNo;
+  }
+      let clientCompanyDetails = await clientModel.findOneAndUpdate({_id:companyId},{$set:{memberShipNo:memberShipNo, validUpTo:validUpTo, approvedBySuperAdmin:approvedBySuperAdmin,reasonForNotchoosing:reasonForNotchoosing}},{new:true});
       if (!clientCompanyDetails) return res.status(404).send({ status: false, message: "No data found" });
       return res.status(200).send({ status: true, message: "Data updated successfully", data: clientCompanyDetails });
-      }
+      
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message })
   }

@@ -11,8 +11,12 @@ const recomendationLetterController= require("../controllers/clients/recomendati
 const masterController = require("../controllers/master/masterController")
 const wingsController = require("../controllers/clients/wingsController")
 const memberShipServices = require("../controllers/memberShipServices");
+const B2BRegistration = require("../controllers/clients/clientB2BController")
+
 const auth = require("../middleware/auth");
 const aws = require("../middleware/aws")
+const clientAuth = require("../middleware/clientAuth")
+const adminAuth = require("../middleware/adminAuth")
 
 // const auth = require('../middlewares/auth')
 //const aws = require("../middlewares/awsLink");
@@ -29,10 +33,11 @@ router.get("/loginMaster", masterController.loginMaster);
 
 //ADMIN
 router.post("/registerAdmin",  adminController.registerAdmin);
-router.get("/loginAdmin", adminController.loginAdmin);
-router.get("/getAdminDetails", adminController.getAdminDetails)
-router.post("/filledByAdmin/:companyId",adminController.filledByAdmin)
-router.post("/adminApprovedRequest/:changePasswordId",adminController.adminApprovedRequest);
+router.post("/loginAdmin", adminController.loginAdmin);
+router.get("/getAdminDetails/:adminId",adminAuth.authentication,adminAuth.authorization, adminController.getAdminDetails)  //myaccount
+router.get("/getCompanyDetailsForAdmin/:adminId",adminAuth.authentication,adminAuth.authorization,adminController.getCompanyDetailsForAdmin)
+router.post("/filledByAdmin/:adminId/:companyId",adminAuth.authentication,adminAuth.authorization, adminController.filledByAdmin) 
+router.post("/adminApprovedRequest/:changePasswordId",adminAuth.authentication,adminAuth.authorization, adminController.adminChangedPassword);
 
 //SUPERADMIN
 router.post("/registerSuperAdmin",  superAdminController.registerSuperAdmin);
@@ -60,24 +65,22 @@ router.post ("/logOutJd/:employeeId/:jdId",auth.authentication,auth.authorizatio
 router.post("/thirtyMin/:employeeId/:jdId",auth.authentication,auth.authorization, employeeJdController.thirtyMinTimesUp);
 router.post("/fifteenMin/:employeeId/:jdId",auth.authentication,auth.authorization, employeeJdController.fifteenMinTimesUp);
 
-
+ 
 
 //HR 
-router.post("/extendedTime/:employeeId/:normalEmployee",auth.authentication,auth.authorizationForHr,employeeJdController.extendTime);
-router.get("/getWantedAdministrationList/:employeeId/:normalEmployee",auth.authentication,auth.authorizationForHr,employeeJdController.getWantedAdministrationList);
-
-//need to add employeeId in path but now in this case we are simply checking it
-router.get("/getWantedAdministrationList/:normalEmployee",employeeJdController.getWantedAdministrationList);
-router.get("/getWantedListByDate/:normalEmployee",employeeJdController.getWantedAdministrationList)
+router.post("/extendedTime/:employeeId/:normalEmployee",auth.authentication,auth.authorization,employeeJdController.extendTime);
+// router.get("/getWantedAdministrationList/:employeeId/:normalEmployee",auth.authentication,auth.authorizationForHr,employeeJdController.getWantedAdministrationList);
+// router.get("/getWantedListByDate/:employeeId/:normalEmployee",auth.authentication,auth.authorizationForHr,employeeJdController.getWantedListByDate)
 
 
 
 
 //client 
 router.post("/createClient", clientController.createClient);
-router.get("/loginClient", clientController.loginClient);
-router.get("/getCompanyDetails/clientId",clientController.getCompanyDetails);
-router.get("getpersonalinfo/:clientId",clientController.getClientPersonalInfo);
+router.post("/loginClient", clientController.loginClient);
+router.post ("/logoutClient/:clientId", clientAuth.authentication,clientAuth.authorization, clientController.logoutClient)
+router.get("/getCompanyDetails/:clientId",clientAuth.authentication,clientAuth.authorization,clientController.getCompanyDetails);
+router.get("/getpersonalinfo/:clientId",clientAuth.authentication,clientAuth.authorization,clientController.getClientPersonalInfo);
 router.post("/changePassword/:clientId",clientController.changePassword);
 router.post("/commercialDir/:id" ,clientController.commercialDir);
 router.put("/updateCompanyDetails/:clientId", clientController.updateCompanyDetails);
@@ -87,8 +90,8 @@ router.put("/updatePersonalDetalis/:clientId", clientController.updatePersonalDe
 //clientEmail
 router.post("/createClientEmail", clientEmailController.createClientEmail);
 
-// clientGSTNo
-// router.post("/createGSTNo", clientGSTNoController.createGSTNo); 
+// clientGSTNo/IEC CODE NO
+router.post("/inputNumberCreated", clientGSTNoController.inputNumberCreated); 
 
 //recommendationLetter
 router.post("/createRecommendationLetter/:companyId",recomendationLetterController.createRecomendationLetter);
@@ -106,6 +109,22 @@ router.post("/verify", wingsController.verify);
 router.get("/previewData/:wingsId",wingsController.previewData);
 router.post("/getTickectNo/:wingsId", wingsController.generateTicketNo)
 router.post("/sendMail/:companyId/:wingsId",wingsController.sendingMailToUser)
+
+
+
+
+//Client B2B collaboration
+
+router.post ("/clientB2BColloboration/:clientId", B2BRegistration.clientB2BColloboration )
+
+
+
+
+
+
+
+
+
 
 
 //MEMBER SHIP SERVICES

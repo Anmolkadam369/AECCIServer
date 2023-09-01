@@ -1,5 +1,6 @@
 let mongoose = require('mongoose')
 let clientEmail = require("../../models/clients/clientEmailModel");
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const createClientEmail = async (req,res)=>{
     try {
@@ -14,8 +15,8 @@ const createClientEmail = async (req,res)=>{
     email = emailData.email = email.trim().toLowerCase();
     if(email == "")
       return res.status(400).send({status: false, message:" please send proper email"})
-
-      const clientEmailCreated = clientEmail.create(emailData);
+    if(!emailRegex.test(email)) return res.status(400).json({ valid: false, message: 'Invalid email.' });
+      const clientEmailCreated = await clientEmail.create(emailData);
       return res.status(200).send({status:true, message:"created Email", data:clientEmailCreated})
 
     } catch (error) {

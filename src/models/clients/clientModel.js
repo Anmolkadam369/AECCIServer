@@ -12,12 +12,7 @@ const clientSchema = new mongoose.Schema({
         required:true,
         trim : true
     },
-    GSTNo:{
-        type:String,
-        required:true,
-        trim : true
-    },
-    IECNo:{
+    inputNumber:{
         type:String,
         required:true,
         trim : true
@@ -127,6 +122,7 @@ const clientSchema = new mongoose.Schema({
     branchDetails:{
         type:{
             registeredAccountNo : String,
+            IFSCCode:String,
             branchName : String
         },
         required:true,

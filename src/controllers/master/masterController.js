@@ -58,7 +58,7 @@ const loginMaster = async (req, res) => {
 
     res.setHeader('x-api-key', token)
 
-    return res.status(200).send({ status: true, message: "Admin login successfully", data: tokenInfo });
+    return res.status(200).send({ status: true, message: "Master login successfully", data: tokenInfo });
   }
 
   catch (error) {

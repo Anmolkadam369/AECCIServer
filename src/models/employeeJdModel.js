@@ -5,6 +5,11 @@ const employeeJdSchema = new mongoose.Schema({
     //     type:String,
     //     // required:true
     // },
+
+    employeeJdId : {
+        type: String,  
+        required:true
+    },
     employeeName:{
         //get data through reference and populate
         type:String,

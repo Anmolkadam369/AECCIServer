@@ -11,7 +11,7 @@ const createExportWing = async (req, res) => {
     try {
         let companyId = req.params.companyId;
         let data = req.body;
-        let { companyName, membershipNo, validUpto, wingName, purposeOfRequest, modeOfCommunication, consultationDate, consultationTime, briefOfCase } = data;
+        let { topicSelection, companyName, membershipNo, validUpto, wingName, purposeOfRequest, modeOfCommunication, consultationDate, consultationTime, briefOfCase } = data;
 
         let clientData = await clientModel.findOne({ _id: companyId })
         console.log("clientData",clientData)
@@ -24,6 +24,17 @@ const createExportWing = async (req, res) => {
 
         // wingName = data.wingName;
         console.log(data.wingName)
+
+        if (!topicSelection)
+        return res.status(400).send({ status: false, message: "topicSelection is required" });
+
+    if (typeof (topicSelection) != "string")
+        return res.status(400).send({ status: false, message: "topicSelection should be in String" });
+
+    if (topicSelection == "")
+        return res.status(400).send({ status: false, message: "Please Enter topicSelection value" });
+
+    //____________________________________________________________________________________________________
 
         if (!purposeOfRequest)
             return res.status(400).send({ status: false, message: "purposeOfRequest is required" });
@@ -177,7 +188,7 @@ const sendingMailToUser = async (req, res) => {
             secure: true,
             auth: {
                 user: 'anmolkadam369@gmail.com',
-                pass: 'dunzxalyusfeqaci',
+                pass: 'xapeupenirhdxtgt',
             },
         });
 

@@ -17,22 +17,31 @@ const wingsSchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    purposeOfRequest:{
+    typeOfQuery:{
         type:String,
         required:true
     },
-    modeOfCommunication:{
+    typeOfTopic:{
         type:Array,
-        // required:true
+        required:true
     },
-    consultationDate:{
+
+    letterOfCredit:{
         type:String,
         required:true
     },
-    consultationTime:{
-        type:String,
-        required:true
-    },
+    // modeOfCommunication:{
+    //     type:Array,
+    //     // required:true
+    // },
+    // consultationDate:{
+    //     type:String,
+    //     required:true
+    // },
+    // consultationTime:{
+    //     type:String,
+    //     required:true
+    // },
     briefOfCase:{
         type:String,
         required:true

@@ -1,10 +1,11 @@
 const jwt = require('jsonwebtoken')
 const administrationModel = require('../models/administrationModel');
+let { ObjectId } = require('mongodb')
 
 
 
 
-const authentication =  (req, res, next) => {
+const authentication = (req, res, next) => {
     try {
         let token = req.headers['authorization'];
 
@@ -21,6 +22,7 @@ const authentication =  (req, res, next) => {
             // add krdo role bhi
 
             req.administrationId = decoded.administrationId;
+            console.log(req.administrationId)
             next();
         });
     } catch (error) {
@@ -32,28 +34,29 @@ const authorization = async (req, res, next) => {
     try {
         let tokenId = req.administrationId;   //objectId of that registerEmplyee
         let paramUserId = req.params.employeeId;   //objectId of that registerEmplyee
-
+        console.log("param",paramUserId)
         // Check if paramUserId is provided and is a valid ObjectId
         if (paramUserId) {
-
-            let userData = await administrationModel.findById(paramUserId);
+            let userData = await administrationModel.findOne({ administrationId: paramUserId });
             console.log(userData)
 
             // If the user with the provided userId does not exist
-            if (!userData) {
-                return res.status(404).send({ status: false, message: "No user found for this UserId" });
-            }
-            if(userData.emailId == "hr@aecci.org.in")
-            return res.status(400).send({ status: false, message: "You cannot create JD" });
-                
-
+            if (!userData) return res.status(404).send({ status: false, message: "No user found for this UserId" });
+            
+            
             // If the userId in the request parameters is not the same as the userId from the token
-            if (paramUserId !== tokenId) {
+            if (userData._id.toString() !== tokenId) {
                 return res.status(403).send({ status: false, message: "Unauthorized User Access" });
             }
-
+            
+            if (userData.emailId === "hr@aecci.org.in") { 
+                console.log("for HR")
+                req.employeeID = paramUserId;
+                next();
+            }
         }
         req.employeeID = paramUserId;
+        console.log("DONE")
         // If paramUserId is not provided , allow access
         next();
 
@@ -63,39 +66,71 @@ const authorization = async (req, res, next) => {
 };
 
 
-const authorizationForHr = async (req, res, next) => {
-    try {
-        let tokenId = req.administrationId;   //objectId of that registerEmplyee
-        let paramUserId = req.params.employeeId;   //objectId of that registerEmplyee
+// const authorizationForHr = async (req, res, next) => {
+//     try {
+//         let tokenId = req.administrationId;   //objectId of that registerEmplyee
+//         let paramUserId = req.params.employeeId;   //objectId of that registerEmplyee
 
-        // Check if paramUserId is provided and is a valid ObjectId
-        if (paramUserId) {
+//         // Check if paramUserId is provided and is a valid ObjectId
+//         if (paramUserId) {
 
-            let userData = await administrationModel.findById(paramUserId);
-            console.log(userData)
+//             let userData = await administrationModel.findOne({administrationId : paramUserId});
+//             console.log(userData)
 
-            // If the user with the provided userId does not exist
-            if (!userData) {
-                return res.status(404).send({ status: false, message: "No user found for this UserId" });
-            }
-            if(userData.emailId !== "hr@aecci.org.in")
-            return res.status(400).send({ status: false, message: "You Are Not Authorize" });
-                
-            console.log(paramUserId , " ", tokenId)
-            // If the userId in the request parameters is not the same as the userId from the token
-            if (paramUserId !== tokenId) {
-                return res.status(403).send({ status: false, message: "Unauthorized User Access" });
-            }
+//             // If the user with the provided userId does not exist
+//             if (!userData) {
+//                 return res.status(404).send({ status: false, message: "No user found for this UserId" });
+//             }
+//             if(userData.emailId !== "hr@aecci.org.in")
+//             return res.status(400).send({ status: false, message: "You Are Not Authorize" });
 
-        }
-        req.employeeID = paramUserId;
-        // If paramUserId is not provided , allow access
-        next();
+//             console.log(paramUserId , " ", tokenId)
+//             // If the userId in the request parameters is not the same as the userId from the token
+//             if (userData._id.toString() !== tokenId) {
+//                 return res.status(403).send({ status: false, message: "Unauthorized User Access" });
+//             }
 
-    } catch (error) {
-        return res.status(500).send({ status: false, message: error.message });
-    }
-};
+//         }
+//         req.employeeID = paramUserId;
+//         // If paramUserId is not provided , allow access
+//         next();
 
+//     } catch (error) {
+//         return res.status(500).send({ status: false, message: error.message });
+//     }
+// };
 
-module.exports = {authentication, authorization,authorizationForHr}
+// const authorizationMaster = async (req, res, next) => {
+//     try {
+//         let tokenId = req.administrationId;   //objectId of that registerEmplyee
+//         let paramUserId = req.params.employeeId;   //objectId of that registerEmplyee
+
+//         // Check if paramUserId is provided and is a valid ObjectId
+//         if (paramUserId) {
+//             let userData = await administrationModel.findOne({administrationId : paramUserId});
+//             console.log(userData)
+
+//             // If the user with the provided userId does not exist
+//             if (!userData) {
+//                 return res.status(404).send({ status: false, message: "No user found for this UserId" });
+//             }
+//             if(userData.emailId == "hr@aecci.org.in")
+//             return res.status(400).send({ status: false, message: "You cannot create JD" });
+
+//             // If the userId in the request parameters is not the same as the userId from the token
+//             if (userData._id.toString() !== tokenId) {
+//                 return res.status(403).send({ status: false, message: "Unauthorized User Access" });
+//             }
+
+//         }
+//         req.employeeID = paramUserId;
+//         console.log("DONE")
+//         // If paramUserId is not provided , allow access
+//         next();
+
+//     } catch (error) {
+//         return res.status(500).send({ status: false, message: error.message });
+//     }
+// };
+
+module.exports = { authentication, authorization }

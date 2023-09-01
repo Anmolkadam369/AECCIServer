@@ -38,19 +38,15 @@ const recomendationLetter = new mongoose.Schema({
         required:true
     },
     passportNo:{
-        type:Number,
-        required:true
-    },
-    location:{
         type:String,
         required:true
     },
     DateOfIssue:{
-        type:Number,
+        type:String,
         required:true
     },
     DateOfExpiry:{
-        type:Number,
+        type:String,
         required:true
     },
     requestingLetter:{

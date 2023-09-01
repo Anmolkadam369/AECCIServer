@@ -1,7 +1,14 @@
 const mongoose = require("mongoose");
 
 const administrationSchema = new mongoose.Schema({
-   profileImage: {    //staffPhoto if there is any
+  administrationId : {
+        type: String,
+        required: true,
+        trim: true
+  },
+  
+  
+  profileImage: {    //staffPhoto if there is any
         type: String,
         required: true,
         trim: true

@@ -6,11 +6,12 @@ const createRecomendationLetter =async (req, res) => {
     try {
         let companyId = req.params.companyId;
         let recomendationLetter = req.body;
-        let { companyName, MemberShipNo, region, country, addressesTo, fullAddress, applicantName, designation, causeOfVisit, passportNo, DateOfIssue, requestingLetter, invitationLetter, passportCopy, EPLastYear, companyProfile, bankGurantee, ITR, SalaryCertificate, comauthrepresentative, signofrepresentative } = recomendationLetter;
+        let { companyName, MemberShipNo, region, country, addressesTo, fullAddress, applicantName, designation, purposeOfVisit, passportNo, DateOfIssue,DateOfExpiry, requestingLetter, invitationLetter, passportCopy, EPLastYear, companyProfile, bankGurantee, ITR, SalaryCertificate, comauthrepresentative, signofrepresentative } = recomendationLetter;
 
         let getCompanyDetails = await clientModel.findById(companyId);
         if (!getCompanyDetails)return res.status(404).send({ status: false, message: "no Company Found" });
         companyName = recomendationLetter.companyName = getCompanyDetails.companyName;
+        
         fullAddress = recomendationLetter.fullAddress = getCompanyDetails.address1;
         
         //__________________________________________________________________________________________________________
@@ -73,18 +74,6 @@ const createRecomendationLetter =async (req, res) => {
             return res.status(400).send({ status: false, message: "Please Enter designation value" });
         //__________________________________________________________________________________________________________
 
-        if (!location)
-        return res.status(400).send({ status: false, message: "location is required" });
-
-    if (typeof (location) != "string")
-        return res.status(400).send({ status: false, message: "location should be in String" });
-
-    if (location == "")
-        return res.status(400).send({ status: false, message: "Please Enter location value" });
-
-
-        //__________________________________________________________________________________________________________
-
 
         if (!purposeOfVisit)
             return res.status(400).send({ status: false, message: "purposeOfVisit is required" });
@@ -99,7 +88,7 @@ const createRecomendationLetter =async (req, res) => {
         if (!passportNo)
             return res.status(400).send({ status: false, message: "passportNo is required" });
 
-        if (typeof (passportNo) != "number")
+        if (typeof (passportNo) != "string")
             return res.status(400).send({ status: false, message: "passportNo should be in String" });
 
         if (passportNo == "")
@@ -109,7 +98,7 @@ const createRecomendationLetter =async (req, res) => {
         if (!DateOfIssue)
             return res.status(400).send({ status: false, message: "DateOfIssue is required" });
 
-        if (typeof (DateOfIssue) != "number")
+        if (typeof (DateOfIssue) != "string")
             return res.status(400).send({ status: false, message: "DateOfIssue should be in String" });
 
         if (DateOfIssue == "")
@@ -119,7 +108,7 @@ const createRecomendationLetter =async (req, res) => {
         if (!DateOfExpiry)
         return res.status(400).send({ status: false, message: "DateOfExpiry is required" });
 
-    if (typeof (DateOfExpiry) != "number")
+    if (typeof (DateOfExpiry) != "string")
         return res.status(400).send({ status: false, message: "DateOfExpiry should be in String" });
 
     if (DateOfExpiry == "")
@@ -184,6 +173,7 @@ const createRecomendationLetter =async (req, res) => {
         
         
             //__________________________________________________________________________________________________________
+        if(designation != "General Manager" && (ITR ||SalaryCertificate||comauthrepresentative|| signofrepresentative)) return res.status(400).send({status:false, message:"you cannot fill this part"})
         if(designation === "General Manager" ){
         if (ITR) {
 
@@ -222,8 +212,8 @@ const createRecomendationLetter =async (req, res) => {
         }
         //__________________________________________________________________________________________________________
 }
-        const recomendationLetterCreated = recomendationLetterModel.create(recomendationLetter);
-        return res.status(201).send({ status: true, message: "successfully ", data: recomendationLetterCreated })
+        const recomendationLetterCreated = await recomendationLetterModel.create(recomendationLetter);
+        return res.status(201).send({ status: true, message: "successfully", data: recomendationLetterCreated })
 
     } catch (error) {
         res.status(500).send({ status: false, message: error.message })

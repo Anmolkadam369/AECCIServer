@@ -4,14 +4,27 @@ const clientModel = require("../models/clients/clientModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt')
 const clientPasswordChangeModel = require('../models/clients/clientPasswordChangeModel');
-
 //const validation = require("../validations/validation");
+
+function generateRandomString(length) {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    result += characters.charAt(randomIndex);
+  }
+  return result;
+}
+
 const registerAdmin = async ( req, res) =>{
   try{
     let adminData = req.body;
     console.log("anmol")
     console.log(adminData)
-    let {fname, lname, profileImage, email, password} = adminData;
+    let {adminId ,fname, lname, profileImage, email, password} = adminData;
+    
+    adminId=adminData.adminId = "admin_"+generateRandomString(10);
+    
     if (!fname)
       return res.status(400).send({ status: false, message: "first name is mandatory" });
 
@@ -107,9 +120,9 @@ const loginAdmin = async(req,res)=>{
   if(!passwordCompare) 
     return res.status(404).send({status:false, message:"password doesn't match"});
     let token = jwt.sign(
-      {adminId : isAdminExists.email,  exp: Math.floor(Date.now() / 1000) + 86400}, "aeccisecurity");
+      {adminId : isAdminExists._id,  exp: Math.floor(Date.now() / 1000) + 86400}, "aeccisecurity");
      let tokenInfo = { userId: isAdminExists._id, token: token };
-
+      console.log(tokenInfo)
     res.setHeader('x-api-key', token)
 
     return res.status(200).send({ status: true, message: "Admin login successfully", data: tokenInfo });
@@ -122,7 +135,8 @@ const loginAdmin = async(req,res)=>{
 
 const getAdminDetails = async (req,res)=>{
   try{
-      let adminData = await adminModel.find();
+      let adminId = req.adminId;
+      let adminData = await adminModel.findById(adminId);
       return res.status(200).send({status: true, message: "get admin data", data: adminData})
   }
   catch(error){
@@ -132,38 +146,64 @@ const getAdminDetails = async (req,res)=>{
 
 const getCompanyDetailsForAdmin = async (req, res) => {
   try {
-      let companyId = req.params;
-      if (!clientId) return res.status(400).send({ status: false, message: "Please Enter clientId value" });
-      let clientCompanyDetails = await clientModel.findById(clientId);
-      if (!clientCompanyDetails) return res.status(404).send({ status: false, message: "No data found" });
-     
-      
+      let clientCompanyDetails = await clientModel.find();
+      if (clientCompanyDetails.length === 0) return res.status(404).send({ status: false, message: "No data found" });
       return res.status(200).send({ status: true, message: "here's company Details", data: clientCompanyDetails });
   }
   catch (error) {
       return res.status(500).send({ status: false, message: error.message })
   }
 }
+// let count = 1001;
 
+// const generateMemberShipNo =  (selectMembership,membershipno) => {
+//     if (!membershipno) {
+//         let shortMemberShipName;
+//         console.log(selectMembership)
+//         if (selectMembership === "Small Business") shortMemberShipName = "SB";
+//         if (selectMembership === "Start- Up") shortMemberShipName = "SU";
+//         if (selectMembership === "Corporate") shortMemberShipName = "CORP";
+//         if (selectMembership === "Non Profit Org") shortMemberShipName = "NPO";
+//         if (selectMembership === "Overseas") shortMemberShipName = "OVR";
+//         if (selectMembership === "Corporate +") shortMemberShipName = "CORPP";
+//         console.log(count)
+//         count += count-count+1;
+//         console.log(count)
+
+//         let currentYear = new Date().getFullYear();
+//         let nextYear = (new Date().getFullYear()) + 1;
+
+//         let generatedMemberShipNo = `AECCI/${shortMemberShipName}/${count}/${currentYear}-${nextYear}`;
+//         console.log("here's your ticket no is ", generatedMemberShipNo)
+//        return generatedMemberShipNo;
+
+//     }
+//     else {
+//         return 'You have already generated the token';
+//     }
+// }
 const filledByAdmin = async (req, res)=>{
   try {
     let companyId = req.params.companyId;
+    if (!companyId) return res.status(400).send({ status: false, message: "Please Enter companyId value" });
     let data = req.body;
-    let {memberShipNo, validUpTo, approved, reasonForNotchoosing}=data;
-      
-      if(!memberShipNo) return res.status(400).send({ status: false, message: "please fill membership no"});
+    let {approved, reasonForNotchoosing}=data;
+    
+    if(!approved) return res.status(400).send({ status: false, message: "please fill approved"});
+    if (typeof approved != "boolean") return res.status(400).send({ status: false, message: "please provide approved in boolean " });
+    if (approved == "") return res.status(400).send({ status: false, message: "Please provide approved value" });
+    approved = data.approved= approved;
+    
+    if(approved === false && !reasonForNotchoosing) return res.status(400).send({ status: false, message: "please put reason"});
+    reasonForNotchoosing = data.reasonForNotchoosing= reasonForNotchoosing;
+    let companyInfo = await clientModel.findById(companyId)
+    if(approved === true && companyInfo.selectMembership !== "Digital User"){
+      console.log(companyInfo.memberShipNo)
+      memberShipNo = generateMemberShipNo(companyInfo.selectMembership,companyInfo.memberShipNo);
+      if(memberShipNo === 'You have already generated the token') return res.status(400).send({ status: false, message: "You have already generated the token" })
+      console.log(memberShipNo)
       memberShipNo = data.memberShipNo= memberShipNo;
-     
-      if(!validUpTo) return res.status(400).send({ status: false, message: "please fill validUpTo"});
-      validUpTo = data.validUpTo= validUpTo;
-
-      if(!approved) return res.status(400).send({ status: false, message: "please fill approved"});
-      approved = data.approved= approved;
-
-      if(approved === false && !reasonForNotchoosing) return res.status(400).send({ status: false, message: "please put reason"});
-      reasonForNotchoosing = data.reasonForNotchoosing= reasonForNotchoosing;
-
-      if (!companyId) return res.status(400).send({ status: false, message: "Please Enter companyId value" });
+  }
       let clientCompanyDetails = await clientModel.findOneAndUpdate({_id:companyId},{$set:{memberShipNo:memberShipNo, validUpTo:validUpTo, approved:approved,reasonForNotchoosing:reasonForNotchoosing}},{new:true});
       if (!clientCompanyDetails) return res.status(404).send({ status: false, message: "No data found" });
       return res.status(200).send({ status: true, message: "Data updated successfully", data: clientCompanyDetails });
@@ -186,7 +226,8 @@ const partiallyApproved = async (req,res)=>{
 
 
 //change password request
-const adminApprovedRequest = async (req, res) => {
+const adminChangedPassword = async (req, res) => {
+  try{
   let id = req.params.changePasswordId;
   let data = req.body.approved;
   if(data === false) return res.status(400).send({ status: false, message: "no password change" }) 
@@ -196,7 +237,10 @@ const adminApprovedRequest = async (req, res) => {
   let isClientExists = await clientModel.findOneAndUpdate({ email: email },{$set:{password:changePasswordInfo.newPassword, confirmPassword: changePasswordInfo.confirmPassword}},{new:true});
   if (!isClientExists) return res.status(404).send({ status: false, message: "Email doesn't exists " })
   return res.status(200).send({ status: false, message: "changed password" })
-  }
+  }catch (error) {
+    return res.status(500).send({ status: false, message: error.message })
+  }  
+}
 
-module.exports = {registerAdmin,loginAdmin,getAdminDetails,getCompanyDetailsForAdmin, filledByAdmin,adminApprovedRequest};
+module.exports = {registerAdmin,loginAdmin,getAdminDetails,getCompanyDetailsForAdmin, filledByAdmin,adminChangedPassword};
   
