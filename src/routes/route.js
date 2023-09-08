@@ -133,7 +133,7 @@ router.get("/getWantedListByDate/:employeeId/:normalEmployee",auth.authenticatio
 router.get("/getExtendData/:employeeId", auth.authentication, auth.authorizationForHr,employeeJdController.getExtendData); 
 router.delete("/deleteEmp/:employeeId/:normalEmployee",auth.authentication,auth.authorizationForHr,administrationController.deleteEmployee)
 
-const payment = require('../controllers/practice');
+// const payment = require('../controllers/practice');
 // router.post('/create-payment-intent', payment.createPaymentIntent)
 module.exports = router;
 

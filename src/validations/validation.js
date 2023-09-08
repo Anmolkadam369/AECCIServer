@@ -23,6 +23,10 @@ const validateName = (name) => {
     return /^[6789][0-9]{9}$/g.test(phoneNo);
   };
   
+  // const validateTelephoneNo = (telephoneNo)=>{
+  //   return ^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$
+
+  // }
   //Pincode
   
   const validatePincode = (pinCode) => {

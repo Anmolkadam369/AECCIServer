@@ -75,7 +75,7 @@ const createClient = async (req, res) => {
         if (typeof (numberOfEmployees) != "number")
             return res.status(400).send({ status: false, message: "numberOfEmployees should be in number" });
          
-            numberOfEmployees = clientsAllData.numberOfEmployees = numberOfEmployees.trim();
+            // numberOfEmployees = clientsAllData.numberOfEmployees = numberOfEmployees.trim();
 
         if (numberOfEmployees == "")
             return res.status(400).send({ status: false, message: "Please Enter numberOfEmployees value" });
