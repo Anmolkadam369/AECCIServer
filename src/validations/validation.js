@@ -20,15 +20,13 @@ const validateName = (name) => {
   //Phone
   
   const validateMobileNo = (phoneNo) => {
-    return /^[6789]\d{9}$/.test(phoneNo);
-    // ^[6789]\d{9}$
-
+    return /^[6789][0-9]{9}$/g.test(phoneNo);
+    
   };
   
-  // const validateTelephoneNo = (telephoneNo)=>{
-  //   return ^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$
-
-  // }
+  const validateTelephoneNo = (telephoneNo)=>{
+    return /^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/
+  }
   //Pincode
   
   const validatePincode = (pinCode) => {
@@ -39,7 +37,9 @@ const validateName = (name) => {
     return /^([a-zA-Z\d ]){2,30}$/.test(title) 
   }
   
-
+const validateWebsite = (websiteAdd)=>{
+  return /^(https?:\/\/)?([a-zA-Z0-9.-]+(\.[a-zA-Z]{2,})+)(\/\S*)?$/.test(websiteAdd)
+}
   
   module.exports = {
     validateName,
@@ -47,5 +47,7 @@ const validateName = (name) => {
     validatePassword,
     validateMobileNo,
     validatePincode,
-    validateTitle
+    validateTitle,
+    validateTelephoneNo,
+    validateWebsite
   };

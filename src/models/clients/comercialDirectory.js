@@ -32,7 +32,7 @@ const commercialDirectorySchema = new mongoose.Schema({
         trim:true
     },
     mobileNo : {
-        type:String,
+        type:Number,
         required:true,
         trim:true
     },

@@ -106,7 +106,7 @@ const clientSchema = new mongoose.Schema({
         trim : true
     },
     telephoneNo:{
-        type:Number,
+        type:String,
         required:true,
         trim : true
     },

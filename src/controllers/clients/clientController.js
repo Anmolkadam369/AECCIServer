@@ -94,6 +94,10 @@ const createClient = async (req, res) => {
         if (websiteAdd == "")
             return res.status(400).send({ status: false, message: "Please Enter websiteAdd value" });
 
+        if(!validation.validateWebsite(websiteAdd))
+            return res.status(400).send({ status: false, message: "please provide valid website" });
+
+
         //_________________add1_____________
 
         if (!address1)
@@ -244,7 +248,7 @@ const createClient = async (req, res) => {
             return res.status(400).send({ status: false, message: "Please Enter surName value" });
 
         if (!validation.validateName(surName))
-            return res.status(400).send({ status: false, message: "please provide valid first name " });
+            return res.status(400).send({ status: false, message: "please provide valid last name " });
       
 
         //___________________________________role______________________________________
@@ -331,18 +335,20 @@ const createClient = async (req, res) => {
         clientsAllData.confirmPassword = hashingconfirmPassword;
 
         //___________________________________telephoneNo______________________________________
+        
         if (!telephoneNo)
             return res.status(400).send({ status: false, message: "telephoneNo is required" });
 
-        if (typeof (telephoneNo) != "number")
-            return res.status(400).send({ status: false, message: "telephoneNo should be in number" });
+        if (typeof (telephoneNo) != "string")
+            return res.status(400).send({ status: false, message: "telephoneNo should be in string" });
             
 
         if (telephoneNo == "")
             return res.status(400).send({ status: false, message: "Please Enter telephoneNo value" });
 
-        //___________________________________PhoneNo______________________________________
-        const mobileNumberPattern = /^[6789]\d{9}$/;
+        if (!validation.validateTelephoneNo(telephoneNo))
+            return res.status(400).send({ status: false, message: "please provide valid telephone No" });
+            //___________________________________PhoneNo______________________________________
         if (!phoneNo)
             return res.status(400).send({ status: false, message: "phoneNo is required" });
 
@@ -355,8 +361,8 @@ const createClient = async (req, res) => {
         // if(!mobileNumberPattern.test(phoneNo))
         //     return res.status(400).send({ status: false, message: "please provide valid 10 digit Phone Number" });
 
-        // if (!validation.validateMobileNo(phoneNo))
-        //     return res.status(400).send({ status: false, message: "please provide valid 10 digit Phone Number" });
+        if (!validation.validateMobileNo(phoneNo))
+            return res.status(400).send({ status: false, message: "please provide valid 10 digit Phone Number" });
         //___________________________________registeredBank______________________________________
         if (!registeredBank)
             return res.status(400).send({ status: false, message: "registeredBank is required" });
@@ -439,6 +445,9 @@ const loginClient = async (req, res) => {
         email = loginData.email = email.trim().toLowerCase();
         if (email == "")
             return res.status(400).send({ status: false, message: " please send proper email" })
+        if (!validation.validateEmail(email))
+            return res.status(400).send({ status: false, message: "Please provide valid email id" });
+      
         //_____________________________________________________
 
         if (!password)
@@ -542,6 +551,8 @@ const changePassword = async (req, res) => {
 
         if (currentPassword == "")
             return res.status(400).send({ status: false, message: "Please Enter currentPassword value" });
+        
+            currentPassword = loginData.currentPassword = currentPassword.trim();
 
         let isClientExists = await clientModel.findById(clientId);
         if (!isClientExists)
@@ -559,6 +570,8 @@ const changePassword = async (req, res) => {
 
         if (typeof (newPassword) != "string")
             return res.status(400).send({ status: false, message: "newPassword should be in String" });
+        
+            newPassword = loginData.newPassword = newPassword.trim();
 
         if (newPassword == "")
             return res.status(400).send({ status: false, message: "Please Enter newPassword value" });
@@ -571,6 +584,8 @@ const changePassword = async (req, res) => {
 
         if (typeof (confirmPassword) != "string")
             return res.status(400).send({ status: false, message: "confirmPassword should be in String" });
+            
+            confirmPassword = loginData.confirmPassword = confirmPassword.trim();
 
         if (confirmPassword == "")
             return res.status(400).send({ status: false, message: "Please Enter confirmPassword value" });
@@ -607,7 +622,9 @@ const commercialDir = async (req, res) => {
 
         if (typeof (companyName) != "string")
             return res.status(400).send({ status: false, message: "companyName should be in String" });
-
+        
+        companyName = dirInfo.companyName = companyName.trim();
+        
         if (companyName == "")
             return res.status(400).send({ status: false, message: "Please Enter companyName value" });
 
@@ -617,6 +634,8 @@ const commercialDir = async (req, res) => {
 
         if (typeof (ownersName) != "string")
             return res.status(400).send({ status: false, message: "ownersName should be in String" });
+        
+            ownersName = dirInfo.ownersName = ownersName.trim();
 
         if (ownersName == "")
             return res.status(400).send({ status: false, message: "Please Enter ownersName value" });
@@ -628,9 +647,14 @@ const commercialDir = async (req, res) => {
 
         if (typeof (email) != "string")
             return res.status(400).send({ status: false, message: "email should be in String" });
+            
+            email = dirInfo.email = email.trim();
 
         if (email == "")
             return res.status(400).send({ status: false, message: "Please Enter email value" });
+
+        if (!validation.validateEmail(email))
+            return res.status(400).send({ status: false, message: "Please provide valid email id" });
 
         let isClientExists = await clientModel.findOne({ email: email });
         if (!isClientExists) return res.status(404).send({ status: false, message: "email not Found" });
@@ -643,15 +667,17 @@ const commercialDir = async (req, res) => {
         if (typeof (establishmentYear) != "string")
             return res.status(400).send({ status: false, message: "establishmentYear should be in string" });
 
+            establishmentYear = dirInfo.establishmentYear = establishmentYear.trim();
+
         if (establishmentYear == "")
             return res.status(400).send({ status: false, message: "Please Enter establishmentYear value" });
         //__________________________Mobile No_______________________
         if (!mobileNo)
             return res.status(400).send({ status: false, message: "mobileNo is required" });
 
-        if (typeof (mobileNo) != "string")
-            return res.status(400).send({ status: false, message: "mobileNo should be in string" });
-
+        if (typeof (mobileNo) != "number")
+            return res.status(400).send({ status: false, message: "mobileNo should be in number" });
+        
         if (mobileNo == "")
             return res.status(400).send({ status: false, message: "Please Enter mobileNo value" });
         //__________________________companyAddress_______________________
@@ -660,7 +686,7 @@ const commercialDir = async (req, res) => {
 
         if (typeof (companyAdd) != "string")
             return res.status(400).send({ status: false, message: "companyAdd should be in String" });
-
+        
         if (companyAdd == "")
             return res.status(400).send({ status: false, message: "Please Enter companyAdd value" });
         //__________________________product_______________________
@@ -940,4 +966,4 @@ const updatePersonalDetails = async (req, res) => {
 
 
 
-module.exports = { createClient, loginClient,logoutClient, getCompanyDetails, getClientPersonalInfo, changePassword, commercialDir, updateCompanyDetails, updatePersonalDetails };
+module.exports = { createClient, loginClient, logoutClient, getCompanyDetails, getClientPersonalInfo, changePassword, commercialDir, updateCompanyDetails, updatePersonalDetails };
