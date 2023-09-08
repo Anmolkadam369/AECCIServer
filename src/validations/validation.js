@@ -20,7 +20,9 @@ const validateName = (name) => {
   //Phone
   
   const validateMobileNo = (phoneNo) => {
-    return /^[6789][0-9]{9}$/g.test(phoneNo);
+    return /^[6789]\d{9}$/.test(phoneNo);
+    // ^[6789]\d{9}$
+
   };
   
   // const validateTelephoneNo = (telephoneNo)=>{

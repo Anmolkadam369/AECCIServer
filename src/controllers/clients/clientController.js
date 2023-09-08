@@ -342,6 +342,7 @@ const createClient = async (req, res) => {
             return res.status(400).send({ status: false, message: "Please Enter telephoneNo value" });
 
         //___________________________________PhoneNo______________________________________
+        const mobileNumberPattern = /^[6789]\d{9}$/;
         if (!phoneNo)
             return res.status(400).send({ status: false, message: "phoneNo is required" });
 
@@ -350,6 +351,9 @@ const createClient = async (req, res) => {
 
         if (phoneNo == "")
             return res.status(400).send({ status: false, message: "Please Enter phoneNo value" });
+
+        // if(!mobileNumberPattern.test(phoneNo))
+        //     return res.status(400).send({ status: false, message: "please provide valid 10 digit Phone Number" });
 
         // if (!validation.validateMobileNo(phoneNo))
         //     return res.status(400).send({ status: false, message: "please provide valid 10 digit Phone Number" });
