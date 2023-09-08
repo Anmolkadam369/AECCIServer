@@ -22,7 +22,7 @@ const commercialDirectorySchema = new mongoose.Schema({
         trim:true
     },
     establishmentYear:{
-        type:Number,
+        type:String,
         required:true,
         trim:true
     },
@@ -32,7 +32,7 @@ const commercialDirectorySchema = new mongoose.Schema({
         trim:true
     },
     mobileNo : {
-        type:Number,
+        type:String,
         required:true,
         trim:true
     },
@@ -45,6 +45,9 @@ const commercialDirectorySchema = new mongoose.Schema({
         type:String,
         required:true,
         trim:true
+    },
+    approved:{
+        type:Boolean
     }
 
 },{timestamps:true});

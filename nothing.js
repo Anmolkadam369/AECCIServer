@@ -84,3 +84,19 @@
 //       "url": "^0.11.1"
 //     }
 //   }
+
+require('dotenv').config();
+
+
+const dbHost = process.env.DB_HOST;
+const dbPort = process.env.DB_PORT;
+console.log("some")
+console.log(`Database Host: ${dbHost}`);
+console.log(`Database Port: ${dbPort}`);
+
+console.log(`DB_HOST from process.env: ${process.env.DB_HOST}`);
+console.log(`DB_PORT from process.env: ${process.env.DB_PORT}`);
+
+
+
+

@@ -5,13 +5,36 @@ const nodemailer = require('nodemailer');
 const svgCaptcha = require('svg-captcha');
 const wingsModel = require('../../models/wingsModel');
 
+let count = 1001;
 
+const generateTicket = (wingName) => {
+        let shortWingName;
+        let wingsName = wingName;
+        if (wingsName === "Export Wing") shortWingName = "EW";
+        if (wingsName === "Legal Wing") shortWingName = "LW";
+        if (wingsName === "HR support Wing") shortWingName = "HRW";
+        if (wingsName === "Business Advice Wing") shortWingName = "BAW";
+        if (wingsName === "Professional Wing") shortWingName = "PW";
+        if (wingsName === "Event & Seminar Wing") shortWingName = "ESW";
+        if (wingsName === "Women Wing") shortWingName = "WW";
+        count++;
+        let currentYear = new Date().getFullYear();
+        let nextYear = (new Date().getFullYear()) + 1;
+
+        let generatedTicketNo = `AECCI/${shortWingName}/${count}/${currentYear}-${nextYear}`;
+        console.log("here's your ticket no is ", generatedTicketNo)
+        return generatedTicketNo;
+    // }
+    // else {
+    //     return res.status(400).send({status:false, message:`You have already generated the token`})
+    // }
+}
 //after clicking on submit button this API will hit
 const createExportWing = async (req, res) => {
     try {
         let companyId = req.params.companyId;
         let data = req.body;
-        let { topicSelection, companyName, membershipNo, validUpto, wingName, purposeOfRequest, modeOfCommunication, consultationDate, consultationTime, briefOfCase } = data;
+        let { companyName, membershipNo, validUpto, wingName,date,time, typeOfQuery, typeOfTopic, letterOfCredit,refDoc, briefOfCase,generateTicketNo } = data;
 
         let clientData = await clientModel.findOne({ _id: companyId })
         console.log("clientData",clientData)
@@ -22,57 +45,41 @@ const createExportWing = async (req, res) => {
         console.log(companyName)
 
 
-        // wingName = data.wingName;
+        wingName = data.wingName;
         console.log(data.wingName)
 
-        if (!topicSelection)
-        return res.status(400).send({ status: false, message: "topicSelection is required" });
+        if (!typeOfQuery)
+        return res.status(400).send({ status: false, message: "typeOfQuery is required" });
 
-    if (typeof (topicSelection) != "string")
-        return res.status(400).send({ status: false, message: "topicSelection should be in String" });
+    if (typeof (typeOfQuery) != "string")
+        return res.status(400).send({ status: false, message: "typeOfQuery should be in String" });
 
-    if (topicSelection == "")
-        return res.status(400).send({ status: false, message: "Please Enter topicSelection value" });
+    if (typeOfQuery == "")
+        return res.status(400).send({ status: false, message: "Please Enter typeOfQuery value" });
 
     //____________________________________________________________________________________________________
 
-        if (!purposeOfRequest)
-            return res.status(400).send({ status: false, message: "purposeOfRequest is required" });
+        if (!typeOfTopic)
+            return res.status(400).send({ status: false, message: "typeOfTopic is required" });
 
-        if (typeof (purposeOfRequest) != "string")
-            return res.status(400).send({ status: false, message: "purposeOfRequest should be in String" });
+        if (typeof (typeOfTopic) != "string")
+            return res.status(400).send({ status: false, message: "typeOfTopic should be in string" });
 
-        if (purposeOfRequest == "")
-            return res.status(400).send({ status: false, message: "Please Enter purposeOfRequest value" });
-
-        //_______________________________________________________________________________________________________________________________________________
-        if (!modeOfCommunication)
-        return res.status(400).send({ status: false, message: "modeOfCommunication is required" });
-
-        if (modeOfCommunication == "")
-            return res.status(400).send({ status: false, message: "Please Enter modeOfCommunication value" });
+        if (typeOfTopic == "")
+            return res.status(400).send({ status: false, message: "Please Enter typeOfTopic value" });
 
         //_______________________________________________________________________________________________________________________________________________
-        if (!consultationDate)
-            return res.status(400).send({ status: false, message: "consultationDate is required" });
+        if (!letterOfCredit)
+        return res.status(400).send({ status: false, message: "letterOfCredit is required" });
 
-        if (typeof (consultationDate) != "string")
-            return res.status(400).send({ status: false, message: "consultationDate should be in String" });
+        if (typeof (letterOfCredit) != "string")
+        return res.status(400).send({ status: false, message: "letterOfCredit should be in string" });
 
-        if (consultationDate == "")
-            return res.status(400).send({ status: false, message: "Please Enter consultationDate value" });
+        if (letterOfCredit == "")
+            return res.status(400).send({ status: false, message: "Please Enter letterOfCredit value" });
+
         //_______________________________________________________________________________________________________________________________________________
-
-        if (!consultationTime)
-            return res.status(400).send({ status: false, message: "consultationTime is required" });
-
-        if (typeof (consultationTime) != "string")
-            return res.status(400).send({ status: false, message: "consultationTime should be in String" });
-
-        if (consultationTime == "")
-            return res.status(400).send({ status: false, message: "Please Enter consultationTime value" });
-        //_______________________________________________________________________________________________________________________________________________
-
+      
         if (!briefOfCase)
             return res.status(400).send({ status: false, message: "briefOfCase is required" });
 
@@ -81,8 +88,18 @@ const createExportWing = async (req, res) => {
 
         if (briefOfCase == "")
             return res.status(400).send({ status: false, message: "Please Enter briefOfCase value" });
-        //_______________________________________________________________________________________________________________________________________________
+        
+        if(briefOfCase.length > 1000)
+            return res.status(400).send({ status: false, message: "You cannot exceed than 1000 characters" });
 
+        //_______________________________________________________________________________________________________________________________________________
+        console.log(req.document)
+        refDoc = data.refDoc = req.document;
+
+        generateTicketNo = data.generateTicketNo = generateTicket(data.wingName);
+        //_______________________________________________________________________________________________________________________________________________
+        date = data.date = `${new Date().getDate()}/${(new Date().getMonth())+1}/${new Date().getFullYear()}`;
+        time = data.time = `${new Date().getHours()}:${(new Date().getMinutes())+1}:${new Date().getSeconds()}`
         let createData = await wingsModel.create(data);
         return res.status(201).send({ status: true, message: "data created", data: createData });
 
@@ -137,35 +154,57 @@ const previewData = async (req, res) => {
     }
 }
 
-let count = 1001;
+// let count = 1001;
 
-const generateTicketNo = async (req, res) => {
-    let wingsId = req.params.wingsId;
-    let foundData = await wingsModel.findById(wingsId);
-    if (!foundData) return res.status(404).send({ status: false, message: "not data found " })
-    if (!foundData.generateTicketNo) {
-        let shortWingName;
-        let wingsName = foundData.wingName;
-        if (wingsName === "Export Wing") shortWingName = "EW";
-        if (wingsName === "Legal Wing") shortWingName = "LW";
-        if (wingsName === "HR support Wing") shortWingName = "HRW";
-        if (wingsName === "Business Advice Wing") shortWingName = "BAW";
-        if (wingsName === "Professional Wing") shortWingName = "PW";
-        if (wingsName === "Event & Seminar Wing") shortWingName = "ESW";
-        if (wingsName === "Women Wing") shortWingName = "WW";
-        count++;
-        let currentYear = new Date().getFullYear();
-        let nextYear = (new Date().getFullYear()) + 1;
+// const generateTicketNo =  (wingName) => {
+//         let shortWingName;
+//         let wingsName = wingName;
+//         if (wingsName === "Export Wing") shortWingName = "EW";
+//         if (wingsName === "Legal Wing") shortWingName = "LW";
+//         if (wingsName === "HR support Wing") shortWingName = "HRW";
+//         if (wingsName === "Business Advice Wing") shortWingName = "BAW";
+//         if (wingsName === "Professional Wing") shortWingName = "PW";
+//         if (wingsName === "Event & Seminar Wing") shortWingName = "ESW";
+//         if (wingsName === "Women Wing") shortWingName = "WW";
+//         count++;
+//         let currentYear = new Date().getFullYear();
+//         let nextYear = (new Date().getFullYear()) + 1;
 
-        let generatedTicketNo = `AECCI/${shortWingName}/${count}/${currentYear}-${nextYear}`;
-        console.log("here's your ticket no is ", generatedTicketNo)
-        let updatedData = await wingsModel.findOneAndUpdate({_id : wingsId},{$set:{generateTicketNo:generatedTicketNo}},{new:true})
-        return res.status(200).send({status:true, message:`here's your ticket no is , ${generatedTicketNo}`})
-    }
-    else {
-        return res.status(400).send({status:false, message:`You have already generated the token`})
-    }
-}
+//         let generatedTicketNo = `AECCI/${shortWingName}/${count}/${currentYear}-${nextYear}`;
+//         console.log("here's your ticket no is ", generatedTicketNo)
+//         res.status(200).send({status:true, message:`here's your ticket no is , ${generatedTicketNo}`})
+//     // }
+//     // else {
+//     //     return res.status(400).send({status:false, message:`You have already generated the token`})
+//     // }
+// }
+
+// const generateTicketNo = async (req, res) => {
+//     let wingsId = req.params.wingsId;
+//     let foundData = await wingsModel.findById(wingsId);
+//     if (!foundData) return res.status(404).send({ status: false, message: "not data found " })
+//     if (!foundData.generateTicketNo) {
+//         let shortWingName;
+//         let wingsName = foundData.wingName;
+//         if (wingsName === "Export Wing") shortWingName = "EW";
+//         if (wingsName === "Legal Wing") shortWingName = "LW";
+//         if (wingsName === "HR support Wing") shortWingName = "HRW";
+//         if (wingsName === "Business Advice Wing") shortWingName = "BAW";
+//         if (wingsName === "Professional Wing") shortWingName = "PW";
+//         if (wingsName === "Event & Seminar Wing") shortWingName = "ESW";
+//         if (wingsName === "Women Wing") shortWingName = "WW";
+//         count++;
+//         let currentYear = new Date().getFullYear();
+//         let nextYear = (new Date().getFullYear()) + 1;
+
+//         let generatedTicketNo = `AECCI/${shortWingName}/${count}/${currentYear}-${nextYear}`;
+//         console.log("here's your ticket no is ", generatedTicketNo)
+//         res.status(200).send({status:true, message:`here's your ticket no is , ${generatedTicketNo}`})
+//     }
+//     else {
+//         return res.status(400).send({status:false, message:`You have already generated the token`})
+//     }
+// }
 
 const sendingMailToUser = async (req, res) => {
     try {
@@ -216,4 +255,4 @@ const sendingMailToUser = async (req, res) => {
 
 }
 
-module.exports = { createExportWing, captcha, verify, previewData, generateTicketNo, sendingMailToUser }
+module.exports = { createExportWing, captcha, verify, previewData, sendingMailToUser }

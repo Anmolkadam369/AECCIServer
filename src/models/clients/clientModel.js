@@ -18,7 +18,8 @@ const clientSchema = new mongoose.Schema({
         trim : true
     },
     numberOfEmployees:{
-        type:String,
+        type:Number,
+        required:true,
         trim:true
     },
     websiteAdd:{
@@ -66,7 +67,7 @@ const clientSchema = new mongoose.Schema({
     },
     howDidYouKnowAboutUs:{
         type:String,
-        // required:true,
+        required:true,
         trim : true
     },
     title:{
@@ -105,8 +106,8 @@ const clientSchema = new mongoose.Schema({
         trim : true
     },
     telephoneNo:{
-        type:String,
-        // required:true,
+        type:Number,
+        required:true,
         trim : true
     },
     phoneNo:{
@@ -119,17 +120,28 @@ const clientSchema = new mongoose.Schema({
         required:true,
         trim : true
     },
-    branchDetails:{
-        type:{
-            registeredAccountNo : String,
-            IFSCCode:String,
-            branchName : String
-        },
+    
+    registeredAccountNo : {
+        type:String,
         required:true,
         trim : true
     },
-    modeOfCommunication:{
-        type: [],
+    IFSCCode:{
+        type:String,
+        required:true,
+        trim : true
+    },
+    branchName :{
+        type:String,
+        required:true,
+        trim : true
+    },
+    throughEmail:{
+        type: Boolean,
+        trim:true
+    },
+    throughCalls:{
+        type: Boolean,
         trim:true
     },
     facebook:{

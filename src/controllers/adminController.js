@@ -4,6 +4,9 @@ const clientModel = require("../models/clients/clientModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt')
 const clientPasswordChangeModel = require('../models/clients/clientPasswordChangeModel');
+const commercialDir = require('../models/clients/comercialDirectory');
+const clientCompanyUpdateModel = require('../models/clients/clientCompanyUpdateModel');
+const clientPersonalModel = require('../models/clients/clientPersonalModel');
 //const validation = require("../validations/validation");
 
 function generateRandomString(length) {
@@ -157,6 +160,94 @@ const getCompanyDetailsForAdmin = async (req, res) => {
   }
 }
 
+const getCompanyUpdateForAdmin = async (req, res) => {
+  try {
+      let clientCompanyDetails = await clientCompanyUpdateModel.find({isApproved:false});
+      if (clientCompanyDetails.length === 0) return res.status(404).send({ status: false, message: "No data found" });
+      return res.status(200).send({ status: true, message: "here's company Details for Update! ", data: clientCompanyDetails });
+  }
+  catch (error) {
+      return res.status(500).send({ status: false, message: error.message })
+  }
+}
+
+const getPersonalUpdateForAdmin = async (req, res) => {
+  try {
+      let clientCompanyDetails = await clientPersonalModel.find({isApproved:false});
+      if (clientCompanyDetails.length === 0) return res.status(404).send({ status: false, message: "No data found" });
+      return res.status(200).send({ status: true, message: "here's company Details for Update! ", data: clientCompanyDetails });
+  }
+  catch (error) {
+      return res.status(500).send({ status: false, message: error.message })
+  }
+}
+
+const updateCompany = async (req,res)=>{
+  try{
+    let updateId = req.params.updateCompanyId;
+    let data = req.body;
+    let {approvedForCompany, clientId} = data;
+     
+    if (typeof approvedForCompany != "boolean") return res.status(400).send({ status: false, message: "please provide approvedForCompany in boolean " });
+    if (!clientId) return res.status(400).send({ status: false, message: "clientId is required" });
+    if (clientId == "") return res.status(400).send({ status: false, message: "Please Enter clientId value" });
+    if (typeof (clientId) != "string") return res.status(400).send({ status: false, message: "clientId should be in String" });
+    if(approvedForCompany === true){ 
+    let foundData = await clientCompanyUpdateModel.findOneAndUpdate({clientId:clientId, _id:updateId},{$set:{isApproved:true}},{new:true});
+    if(!foundData) return res.status(400).send({status:false, message:"No document Found !!!"});
+    console.log(foundData)
+  let updatedData = await clientModel.findOneAndUpdate({ _id: clientId }, { $set: { companyName: foundData.companyName, numberOfEmployees: foundData.numberOfEmployees, businessCategory: foundData.businessCategory, howDidYouKnowAboutUs: foundData.howDidYouKnowAboutUs, telephoneNo: foundData.telephoneNo, email: foundData.email, websiteAdd: foundData.websiteAdd, address1: foundData.address1, address2: foundData.address2, country: foundData.country, state: foundData.state, pinCode: foundData.pinCode, facebook: foundData.facebook, twitter: foundData.twitter, linkedIn: foundData.linkedIn } }, { new: true });
+  return res.status(200).send({status:true, message:"dataUpdated", data:updatedData})
+  }
+    return res.status(200).send({status:true, message:"data isn't updated "})
+  }
+  
+  
+  catch (error) {
+    return res.status(500).send({ status: false, message: error.message })
+}
+}
+
+const updatePersonal = async (req,res)=>{
+  try{
+    let updateId = req.params.updatePersonalId;
+    let data = req.body;
+    let {approvedForPersonal, clientId} = data;
+     
+    if (typeof approvedForPersonal != "boolean") return res.status(400).send({ status: false, message: "please provide approvedForPersonal in boolean " });
+    if (!clientId) return res.status(400).send({ status: false, message: "clientId is required" });
+    if (clientId == "") return res.status(400).send({ status: false, message: "Please Enter clientId value" });
+    if (typeof (clientId) != "string") return res.status(400).send({ status: false, message: "clientId should be in String" });
+    if(approvedForPersonal === true){ 
+    let foundData = await clientPersonalModel.findOneAndUpdate({clientId:clientId, _id:updateId},{$set:{isApproved:true}},{new:true});
+    if(!foundData) return res.status(400).send({status:false, message:"No document Found !!!"});
+    console.log(foundData)
+  let updatedData = await clientModel.findOneAndUpdate({ _id: clientId  }, { $set: { title: foundData.title, firstName: foundData.firstName,surName:foundData.surName, role: foundData.role, phoneNo: foundData.phoneNo, address1: foundData.address1, address2: foundData.address2, country: foundData.country, state: foundData.state, pinCode: foundData.pinCode } }, { new: true });
+  return res.status(200).send({status:true, message:"dataUpdated", data:updatedData})
+  }
+    return res.status(200).send({status:true, message:"data isn't updated "})
+  }
+  
+  
+  catch (error) {
+    return res.status(500).send({ status: false, message: error.message })
+}
+}
+
+const adminApprovedComDir = async (req, res) => {
+  try{
+  let id = req.params.comDirId;
+  let data = req.body.approved;
+  // let foundData = await commercialDir.findById(id);
+  let foundData= await commercialDir.findByIdAndUpdate({_id:id}, {approved:data}, {new:true});
+if (!foundData) return res.status(404).send({ status: false, message: "document doesn't exists" })
+console.log(foundData)
+  return res.status(200).send({ status: false, message: "data updated" })
+  }catch (error) {
+    return res.status(500).send({ status: false, message: error.message })
+  }  
+}
+
 const filledByAdmin = async (req, res)=>{
   try {
     let companyId = req.params.companyId;
@@ -189,8 +280,6 @@ const partiallyApproved = async (req,res)=>{
   }
 }
 
-
-
 //change password request
 const adminChangedPassword = async (req, res) => {
   try{
@@ -208,5 +297,7 @@ const adminChangedPassword = async (req, res) => {
   }  
 }
 
-module.exports = {registerAdmin,loginAdmin,getAdminDetails,getCompanyDetailsForAdmin, filledByAdmin,adminChangedPassword};
+
+
+module.exports = {registerAdmin,adminApprovedComDir,updatePersonal,loginAdmin,updateCompany,getAdminDetails,getCompanyDetailsForAdmin,getCompanyUpdateForAdmin,getPersonalUpdateForAdmin, filledByAdmin,adminChangedPassword};
   

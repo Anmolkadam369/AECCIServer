@@ -65,10 +65,10 @@ const recomendationLetter = new mongoose.Schema({
     //     type:String,
     //     required:true
     // },
-    EPLastYear:{
-        type:String,
-        required:true
-    },
+    // EPLastYear:{
+    //     type:String,
+    //     required:true
+    // },
     companyProfile:{
         type:String,
         required:true
@@ -87,6 +87,14 @@ const recomendationLetter = new mongoose.Schema({
     },
     signofrepresentative:{
         type:String,
+    },
+    paymentStruture:{
+        type:String,
+        required:true
+    },
+    deliveryMode:{
+        type:String,
+        required:true
     }
 
 },{timestamps:true});

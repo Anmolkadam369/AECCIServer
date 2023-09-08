@@ -22,7 +22,7 @@ const wingsSchema = new mongoose.Schema({
         required:true
     },
     typeOfTopic:{
-        type:Array,
+        type:String,
         required:true
     },
 
@@ -31,23 +31,31 @@ const wingsSchema = new mongoose.Schema({
         required:true
     },
     // modeOfCommunication:{
-    //     type:Array,
+    //     type:String,
     //     // required:true
     // },
-    // consultationDate:{
-    //     type:String,
-    //     required:true
-    // },
-    // consultationTime:{
-    //     type:String,
-    //     required:true
-    // },
-    briefOfCase:{
+    // // consultationTime:{
+        //     type:String,
+        //     required:true
+        // },
+        briefOfCase:{
+            type:String,
+            required:true
+        },
+        refDoc:{
+            type:String,
+            required:true
+        },
+        generateTicketNo:{
+            type:String
+    },
+    date:{
         type:String,
         required:true
     },
-    generateTicketNo:{
-        type:String
+    time:{
+        type:String,
+        required:true 
     }
 },{timestamps:true});
 

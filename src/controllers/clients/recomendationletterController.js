@@ -6,23 +6,42 @@ const createRecomendationLetter =async (req, res) => {
     try {
         let companyId = req.params.companyId;
         let recomendationLetter = req.body;
-        let { companyName, MemberShipNo, region, country, addressesTo, fullAddress, applicantName, designation, purposeOfVisit, passportNo, DateOfIssue,DateOfExpiry, requestingLetter, invitationLetter, passportCopy, EPLastYear, companyProfile, bankGurantee, ITR, SalaryCertificate, comauthrepresentative, signofrepresentative } = recomendationLetter;
-
+        let { companyName, MemberShipNo, region, country, addressesTo, fullAddress, applicantName, designation, purposeOfVisit, passportNo, DateOfIssue,DateOfExpiry, requestingLetter, invitationLetter, passportCopy, EPLastYear, companyProfile, bankGurantee, ITR, SalaryCertificate, comauthrepresentative, signofrepresentative,paymentStruture,deliveryMode } = recomendationLetter;
+        
         let getCompanyDetails = await clientModel.findById(companyId);
         if (!getCompanyDetails)return res.status(404).send({ status: false, message: "no Company Found" });
         companyName = recomendationLetter.companyName = getCompanyDetails.companyName;
         
         fullAddress = recomendationLetter.fullAddress = getCompanyDetails.address1;
         
-        //__________________________________________________________________________________________________________
-        if (!MemberShipNo)
-            return res.status(400).send({ status: false, message: "MemberShipNo is required" });
+        MemberShipNo =  recomendationLetter.MemberShipNo =  getCompanyDetails.memberShipNo;
 
-        if (typeof (MemberShipNo) != "string")
-            return res.status(400).send({ status: false, message: "MemberShipNo should be in String" });
+        for(let i=0; i<req.document.length; i++){
+            if(req.document[i].docName === "requestingLetter") 
+            requestingLetter = recomendationLetter.requestingLetter = req.document[i].docLink;
 
-        if (MemberShipNo == "")
-            return res.status(400).send({ status: false, message: "Please Enter MemberShipNo value" });
+            if(req.document[i].docName === "invitationLetter") 
+            invitationLetter = recomendationLetter.invitationLetter = req.document[i].docLink;
+
+            if(req.document[i].docName === "passportCopy") 
+            passportCopy = recomendationLetter.passportCopy = req.document[i].docLink;
+
+            if(req.document[i].docName === "companyProfile") 
+            companyProfile = recomendationLetter.companyProfile = req.document[i].docLink;
+
+            if(req.document[i].docName === "ITR") 
+            ITR = recomendationLetter.ITR = req.document[i].docLink;
+
+            if(req.document[i].docName === "SalaryCertificate") 
+            SalaryCertificate = recomendationLetter.SalaryCertificate = req.document[i].docLink;
+
+            if(req.document[i].docName === "comauthrepresentative") 
+            comauthrepresentative = recomendationLetter.comauthrepresentative = req.document[i].docLink;
+
+            if(req.document[i].docName === "signofrepresentative") 
+            signofrepresentative = recomendationLetter.signofrepresentative = req.document[i].docLink;
+        }
+        
         //__________________________________________________________________________________________________________
         if (!region)
             return res.status(400).send({ status: false, message: "region is required" });
@@ -115,14 +134,6 @@ const createRecomendationLetter =async (req, res) => {
         return res.status(400).send({ status: false, message: "Please Enter DateOfExpiry value" });
     //__________________________________________________________________________________________________________
 
-        if (!requestingLetter)
-            return res.status(400).send({ status: false, message: "requestingLetter is required" });
-
-        if (typeof (requestingLetter) != "string")
-            return res.status(400).send({ status: false, message: "requestingLetter should be in String" });
-
-        if (requestingLetter == "")
-            return res.status(400).send({ status: false, message: "Please Enter requestingLetter value" });
         //__________________________________________________________________________________________________________
 
         if (!invitationLetter)
@@ -152,14 +163,14 @@ const createRecomendationLetter =async (req, res) => {
         // if (adharcard == "")
         //     return res.status(400).send({ status: false, message: "Please Enter adharcard value" });
         //__________________________________________________________________________________________________________
-        if (!EPLastYear)
-            return res.status(400).send({ status: false, message: "EPLastYear is required" });
+        // if (!EPLastYear)
+        //     return res.status(400).send({ status: false, message: "EPLastYear is required" });
 
-        if (typeof (EPLastYear) != "string")
-            return res.status(400).send({ status: false, message: "EPLastYear should be in String" });
+        // if (typeof (EPLastYear) != "string")
+        //     return res.status(400).send({ status: false, message: "EPLastYear should be in String" });
 
-        if (EPLastYear == "")
-            return res.status(400).send({ status: false, message: "Please Enter EPLastYear value" });
+        // if (EPLastYear == "")
+        //     return res.status(400).send({ status: false, message: "Please Enter EPLastYear value" });
         //__________________________________________________________________________________________________________
         if (!companyProfile)
             return res.status(400).send({ status: false, message: "companyProfile is required" });
@@ -211,7 +222,33 @@ const createRecomendationLetter =async (req, res) => {
                 return res.status(400).send({ status: false, message: "Please Enter signofrepresentative value" });
         }
         //__________________________________________________________________________________________________________
-}
+        if (paymentStruture) {
+
+            if (typeof (paymentStruture) != "string")
+                return res.status(400).send({ status: false, message: "paymentStruture should be in String" });
+
+            if (paymentStruture == "")
+                return res.status(400).send({ status: false, message: "Please Enter paymentStruture value" });
+            
+            if (paymentStruture == "")
+                return res.status(400).send({ status: false, message: "Please Enter paymentStruture value" });
+            
+            if(paymentStruture!==region) return res.status(400).send({ status: false, message: "Please Enter valid paymentStruture value" });
+        }
+
+        if (deliveryMode) {
+            if (typeof (deliveryMode) != "string")
+                return res.status(400).send({ status: false, message: "deliveryMode should be in String" });
+
+            if (deliveryMode == "")
+                return res.status(400).send({ status: false, message: "Please Enter deliveryMode value" });
+            
+            if (deliveryMode == "")
+                return res.status(400).send({ status: false, message: "Please Enter deliveryMode value" });
+            
+        }
+
+    }
         const recomendationLetterCreated = await recomendationLetterModel.create(recomendationLetter);
         return res.status(201).send({ status: true, message: "successfully", data: recomendationLetterCreated })
 

@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const multer = require("multer");
 const cors = require("cors")
+require('dotenv').config();
 const port = process.env.PORT || 3001;
 const router = require("./routes/route");
 mongoose.set("strictQuery", true);
