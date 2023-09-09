@@ -60,11 +60,14 @@ router.post ("/filledBysuperAdmin/:superAdminId/:companyId",superAdminAuth.authe
 //client 
 router.post("/createClient", clientController.createClient);
 router.post("/loginClient", clientController.loginClient);
+router.post("/forgotPasswordClient",clientController.forgotPasswordClient);
+router.get ("/resetPassword/:token", clientController.resetPasswordClient)
 router.post ("/logoutClient/:clientId", clientAuth.authentication,clientAuth.authorization, clientController.logoutClient)
 router.get("/getCompanyDetails/:clientId",clientAuth.authentication,clientAuth.authorization,clientController.getCompanyDetails);
 router.get("/getpersonalinfo/:clientId",clientAuth.authentication,clientAuth.authorization,clientController.getClientPersonalInfo);
 router.post("/changePassword/:clientId",clientAuth.authentication,clientAuth.authorization,clientController.changePassword);
 router.post("/commercialDir/:clientId" ,aws.awsLinkProfile, clientAuth.authentication,clientAuth.authorization,clientController.commercialDir);
+router.post("/marketingDetails/:clientId" ,clientAuth.authentication,clientAuth.authorization,clientController.marketingDetails);
 router.put("/updateCompanyDetails/:clientId",clientAuth.authentication,clientAuth.authorization, clientController.updateCompanyDetails);
 router.put("/updatePersonalDetalis/:clientId",clientAuth.authentication,clientAuth.authorization, clientController.updatePersonalDetails);
 router.get("/imagePreview/*", aws.imagePreview)

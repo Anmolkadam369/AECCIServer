@@ -18,7 +18,7 @@ const adminSchema = new mongoose.Schema({
     },
     profileImage: {    //adminPhoto if there is any
         type: String,
-        // required: true,
+        required: true,
         trim: true
     },
     email: {

@@ -12,6 +12,7 @@ const clientCompSchema = new mongoose.Schema({
     },
     numberOfEmployees:{
         type:String,
+        // required:true,
         trim:true
     },
     websiteAdd:{

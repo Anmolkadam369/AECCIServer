@@ -9,7 +9,7 @@ aws.config.update({
 let uploadFile = async (file) => {
     return new Promise(function (resolve, reject) {
         let s3 = new aws.S3({ apiVersion: "2006-03-01" });
-
+        console.log(process.env.BUCKET)
         var uploadParams = {
             ACL: "public-read", //Access Control Locator
             Bucket: process.env.BUCKET,

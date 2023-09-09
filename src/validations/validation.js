@@ -40,6 +40,18 @@ const validateName = (name) => {
 const validateWebsite = (websiteAdd)=>{
   return /^(https?:\/\/)?([a-zA-Z0-9.-]+(\.[a-zA-Z]{2,})+)(\/\S*)?$/.test(websiteAdd)
 }
+
+const validateFacebook = (facebook) =>{
+  return /^(https?:\/\/)?(www\.)?facebook\.com\/[a-zA-Z0-9.]+$/.test(facebook)
+}
+
+const validateLinkedIn = (linkedIn) =>{
+  return /^https:\/\/www\.linkedin\.com\/in\/[a-zA-Z0-9-]+\/?$/.test(facebook)
+}
+const validateTwitter = (twitter) =>{
+  return /^https?:\/\/twitter\.com\/([a-zA-Z0-9_]+)\/?/.test(facebook)
+}
+
   
   module.exports = {
     validateName,
@@ -49,5 +61,8 @@ const validateWebsite = (websiteAdd)=>{
     validatePincode,
     validateTitle,
     validateTelephoneNo,
-    validateWebsite
+    validateWebsite,
+    validateFacebook,
+    validateLinkedIn,
+    validateTwitter
   };

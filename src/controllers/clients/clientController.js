@@ -5,10 +5,13 @@ const clientPasswordChangeModel = require('../../models/clients/clientPasswordCh
 const comercialDirectory = require('../../models/clients/comercialDirectory');
 const companyUpdateModel = require('../../models/clients/clientCompanyUpdateModel');
 const personalUpdateModel = require('../../models/clients/clientPersonalModel');
-
+const nodemailer = require('nodemailer');
+const crypto = require("crypto")
 const jwt = require("jsonwebtoken");
+const forgotPasswordModel = require("../../models/forgotPasswordModel")
 const clientPersonalModel = require('../../models/clients/clientPersonalModel');
-const validation = require("../../validations/validation")
+const validation = require("../../validations/validation");
+const clientMarketingModel = require('../../models/clients/clientMarketingModel');
 const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
 const iecRegex = /^[A-Z]{3}[0-9]{5}[A-Z]{2}$/;
 
@@ -168,13 +171,14 @@ const createClient = async (req, res) => {
         if (!pinCode)
             return res.status(400).send({ status: false, message: "pinCode is required" });
         
-        if (!validation.validatePincode(pinCode)) return res.status(400).send({ status: false, message: "please provide valid  pincode" })
         
         if (typeof (pinCode) != "number")
-            return res.status(400).send({ status: false, message: "pinCode should be in number" });
-
+        return res.status(400).send({ status: false, message: "pinCode should be in number" });
+    
         if (pinCode == "")
             return res.status(400).send({ status: false, message: "Please Enter pinCode value" });
+        
+        if (!validation.validatePincode(pinCode)) return res.status(400).send({ status: false, message: "please provide valid  pincode" })
 
         //________________________________businessCategory_________________________________________
 
@@ -391,18 +395,6 @@ const createClient = async (req, res) => {
         if (accNo == "")
             return res.status(400).send({ status: false, message: "Please Enter accNo value" });
 
-        let branch = branchName;
-
-        if (!branch)
-            return res.status(400).send({ status: false, message: "branch is required" });
-
-        if (typeof (branch) != "string")
-            return res.status(400).send({ status: false, message: "branch should be in String" });
-        branch = clientsAllData.branch = branch.trim();
-
-        if (branch == "")
-            return res.status(400).send({ status: false, message: "Please Enter branch value" });
-        
         let ifsc = IFSCCode;
         if (!ifsc)
             return res.status(400).send({ status: false, message: "ifsc is required" });
@@ -462,8 +454,8 @@ const loginClient = async (req, res) => {
 
 
         //regex password
-        // if (!validation.validatePassword(password))
-        // return res.status(400).send({ status: false, message: "8-15 characters, one lowercase letter, one number and maybe one UpperCase & one special character" });
+        if (!validation.validatePassword(password))
+        return res.status(400).send({ status: false, message: "8-15 characters, one lowercase letter, one number and maybe one UpperCase & one special character" });
 
         //Encrypting password
         //   let hashing = bcrypt.hashSync(password, 10);
@@ -489,6 +481,122 @@ const loginClient = async (req, res) => {
         return res.status(500).send({ status: false, message: error.message })
     }
 }
+
+const transporter = nodemailer.createTransport({
+    service: 'Gmail', // e.g., 'Gmail'
+    auth: {
+      user: "anmolkadam369@gmail.com",
+      pass: "vcynqfpjuodxljyh"
+    }
+  });
+  
+  // Function to send forgot password email
+  const sendForgotPasswordEmail = (email, token) => {
+  
+    const mailOptions = {
+      from: 'anmolkadam369@gmail.com', // Your email address
+      to: email,
+      subject: 'Password Reset',
+      text: `Click the link to reset your password: http://localhost:3001/administration/resetPassword/${token}`
+    };
+  
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log('Error sending email:', error);
+      } else {
+        console.log('Email sent:', info.response);
+      }
+    });
+  };
+  
+  const  forgotPasswordClient =async (req, res) => {
+    let forgotPassword = req.body;
+    let {email,resetToken,resetTokenExpires} = forgotPassword;
+    // Find forgotPassword by email (you should replace this with your database query)
+    const foundforgotPassword = clientModel.findOne({email: email});
+    if (!foundforgotPassword) {
+      return res.status(404).json({ message: 'user not found' });
+    }
+  
+    // Generate and store reset token
+    const token = crypto.randomBytes(20).toString('hex');
+    console.log("token:",token)
+  
+    email=forgotPassword.email = email;
+    resetToken = forgotPassword.resetToken = token;
+    console.log("resetToken:",resetToken)
+  
+    resetTokenExpires = forgotPassword.resetTokenExpires = Date.now() + 6000000; // Token expires in 1 hour
+    console.log("resetTokenExpires:",resetTokenExpires)
+    console.log("forgotPassword:      ", forgotPassword)
+    let allInfo = await forgotPasswordModel.create(forgotPassword);
+    res.status(200).send({status:true, message:allInfo})
+    req.token = token;
+    console.log(req.token)
+    sendForgotPasswordEmail(email,token)
+  };
+  
+  const resetPasswordClient =async (req, res) => {
+  
+    let data = req.body;
+    let { newPassword,confirmPassword } = data;
+    let token = req.params.token;
+    
+    if (!newPassword)
+    return res.status(400).send({ status: false, message: "newPassword is mandatory" });
+
+    if (typeof (newPassword) != "string")
+        return res.status(400).send({ status: false, message: "please provide newPassword in string " });
+        newPassword = data.newPassword = newPassword.trim();
+
+    if (newPassword == "")
+        return res.status(400).send({ status: false, message: "Please provide newPassword value" });
+
+    if (!validation.validatePassword(newPassword))
+        return res.status(400).send({ status: false, message: "8-15 characters, one lowercase letter, one number and maybe one UpperCase & one special character" });
+
+    //Encrypting newPassword
+    let hashingnewPassword = bcrypt.hashSync(newPassword, 10);
+    newPassword = data.newPassword = hashingnewPassword;
+
+    //___________________________________confirmPassword______________________________________
+
+    if (!newPassword)
+        return res.status(400).send({ status: false, message: "password is mandatory" });
+
+    if (!confirmPassword)
+        return res.status(400).send({ status: false, message: "confirmPassword is mandatory" });
+
+    if (typeof (confirmPassword) != "string")
+        return res.status(400).send({ status: false, message: "please provide confirmPassword in string " });
+        
+        confirmPassword = data.confirmPassword = confirmPassword.trim();
+
+    if (confirmPassword == "")
+        return res.status(400).send({ status: false, message: "Please provide confirmPassword value" });
+
+    if (!validation.validatePassword(confirmPassword))
+        return res.status(400).send({ status: false, message: "8-15 characters, one lowercase letter, one number and maybe one UpperCase & one special character" });
+
+    let passwordCompare = await bcrypt.compare(confirmPassword, data.newPassword)
+    console.log(passwordCompare);
+    if (!passwordCompare)
+        return res.status(404).send({ status: false, message: "password doesn't match" });
+
+    //Encrypting confirmpassword
+    let hashingconfirmPassword = bcrypt.hashSync(confirmPassword, 10);
+    confirmPassword = data.confirmPassword = hashingconfirmPassword;
+
+    const user =await forgotPasswordModel.findOne({resetToken:token});
+    console.log(user)
+    // if (!user) return res.status(400).send({status:false, message: 'Invalid token' });
+    if(user.resetTokenExpires < Date.now()) return res.status(400).send({status:false, message: 'Token expired'  });
+   
+  
+    let some = await clientModel.findOneAndUpdate({email:user.email},{$set:{password:newPassword, confirmPassword:confirmPassword}},{new:true});
+    console.log(some)
+    return res.json({ message: 'Password reset successful' });
+  }
 
 const logoutClient = async (req,res)=>{
     try{
@@ -668,6 +776,7 @@ const commercialDir = async (req, res) => {
             return res.status(400).send({ status: false, message: "establishmentYear should be in string" });
 
             establishmentYear = dirInfo.establishmentYear = establishmentYear.trim();
+            establishmentYear = Number(establishmentYear)
 
         if (establishmentYear == "")
             return res.status(400).send({ status: false, message: "Please Enter establishmentYear value" });
@@ -675,11 +784,18 @@ const commercialDir = async (req, res) => {
         if (!mobileNo)
             return res.status(400).send({ status: false, message: "mobileNo is required" });
 
-        if (typeof (mobileNo) != "number")
-            return res.status(400).send({ status: false, message: "mobileNo should be in number" });
+        if (typeof (mobileNo) != "string")
+            return res.status(400).send({ status: false, message: "mobileNo should be in string" });
+        mobileNo = dirInfo.mobileNo = mobileNo.trim();
+        mobileNo = Number(mobileNo)
         
         if (mobileNo == "")
             return res.status(400).send({ status: false, message: "Please Enter mobileNo value" });
+        
+        if (!validation.validateMobileNo(mobileNo))
+            return res.status(400).send({ status: false, message: "please provide valid 10 digit Phone Number" });
+        
+        
         //__________________________companyAddress_______________________
         if (!companyAdd)
             return res.status(400).send({ status: false, message: "companyAdd is required" });
@@ -687,14 +803,20 @@ const commercialDir = async (req, res) => {
         if (typeof (companyAdd) != "string")
             return res.status(400).send({ status: false, message: "companyAdd should be in String" });
         
+            companyAdd = dirInfo.companyAdd = companyAdd.trim();
+
         if (companyAdd == "")
             return res.status(400).send({ status: false, message: "Please Enter companyAdd value" });
+        
+        
         //__________________________product_______________________
         if (!companyProduct)
             return res.status(400).send({ status: false, message: "companyProduct is required" });
 
         if (typeof (companyProduct) != "string")
             return res.status(400).send({ status: false, message: "companyProduct should be in String" });
+        
+            companyProduct = dirInfo.companyProduct = companyProduct.trim();
 
         if (companyProduct == "")
             return res.status(400).send({ status: false, message: "Please Enter companyProduct value" });
@@ -704,6 +826,8 @@ const commercialDir = async (req, res) => {
 
         if (typeof (companyActivity) != "string")
             return res.status(400).send({ status: false, message: "companyActivity should be in String" });
+        
+            companyActivity = dirInfo.companyActivity = companyActivity.trim();
 
         if (companyActivity == "")
             return res.status(400).send({ status: false, message: "Please Enter companyActivity value" });
@@ -725,23 +849,31 @@ const updateCompanyDetails = async (req, res) => {
         let { isApproved,companyName, numberOfEmployees, clientId, businessCategory, howDidYouKnowAboutUs, telephoneNo, email, websiteAdd, address1, address2, country, state, pinCode, facebook, linkedIn, twitter } = updateData;
         let companyData = await clientModel.findById(companyId);
         if (!companyData) return res.status(404).send({ status: false, message: "no data found " })
+        
         if (companyName) {
             if (typeof (companyName) != "string")
-                return res.status(400).send({ status: false, message: "companyName should be in String" });
+            return res.status(400).send({ status: false, message: "companyName should be in String" });
+           
+         companyName = updateData.companyName = companyName.trim();
 
-            if (companyName == "")
-                return res.status(400).send({ status: false, message: "Please Enter companyName value" });
+        if (companyName == "")
+            return res.status(400).send({ status: false, message: "Please Enter companyName value" });
         }
+//-------------------------------------------------------------------------------------------
         if (numberOfEmployees) {
-            if (typeof (numberOfEmployees) != "string")
-                return res.status(400).send({ status: false, message: "numberOfEmployees should be in String" });
-
-            if (numberOfEmployees == "")
-                return res.status(400).send({ status: false, message: "Please Enter numberOfEmployees value" });
+            if (typeof (numberOfEmployees) != "number")
+            return res.status(400).send({ status: false, message: "numberOfEmployees should be in number" });
+        
+        if (numberOfEmployees == "")
+            return res.status(400).send({ status: false, message: "Please Enter numberOfEmployees value" });
         }
+//-------------------------------------------------------------------------------------------
+
         if (businessCategory) {
             if (typeof (businessCategory) != "string")
                 return res.status(400).send({ status: false, message: "businessCategory should be in String" });
+            
+                businessCategory = updateData.businessCategory = businessCategory.trim();
 
             if (businessCategory == "")
                 return res.status(400).send({ status: false, message: "Please Enter businessCategory value" });
@@ -758,38 +890,58 @@ const updateCompanyDetails = async (req, res) => {
         if (howDidYouKnowAboutUs) {
             if (typeof (howDidYouKnowAboutUs) != "string")
                 return res.status(400).send({ status: false, message: "howDidYouKnowAboutUs should be in String" });
+            howDidYouKnowAboutUs = updateData.howDidYouKnowAboutUs = howDidYouKnowAboutUs.trim();
 
             if (howDidYouKnowAboutUs == "")
                 return res.status(400).send({ status: false, message: "Please Enter howDidYouKnowAboutUs value" });
         }
 
         if (telephoneNo) {
-            if (typeof (telephoneNo) != "number")
-                return res.status(400).send({ status: false, message: "telephoneNo should be in number" });
+            if (typeof (telephoneNo) != "string")
+                return res.status(400).send({ status: false, message: "telephoneNo should be in string" });
 
             if (telephoneNo == "")
                 return res.status(400).send({ status: false, message: "Please Enter telephoneNo value" });
         }
 
         if (email) {
-            if (typeof (email) != "string")
-                return res.status(400).send({ status: false, message: "email should be in String" });
-
+            if (typeof (email) != "string") {
+                return res.status(400).send({ status: false, message: " please send proper email" })
+            }
+            email = updateData.email = email.trim().toLowerCase()
             if (email == "")
-                return res.status(400).send({ status: false, message: "Please Enter email value" });
+                return res.status(400).send({ status: false, message: " please send proper email" })
+    
+            if (!validation.validateEmail(email))
+                return res.status(400).send({ status: false, message: "Please provide valid email id" });
+          
+            let isClientExists = await clientModel.findOne({ email: email });
+    
+            if (isClientExists) {
+                if (isClientExists.email == email)
+                    return res.status(400).send({ status: false, message: "email id already exist, send another email" });
+            }
         }
 
         if (websiteAdd) {
-            if (typeof (websiteAdd) != "string")
-                return res.status(400).send({ status: false, message: "websiteAdd should be in String" });
+        if (typeof (websiteAdd) != "string") 
+            return res.status(400).send({ status: false, message: "websiteAdd should be in String" });
+         
+        websiteAdd = updateData.websiteAdd = websiteAdd.trim();
 
-            if (websiteAdd == "")
-                return res.status(400).send({ status: false, message: "Please Enter websiteAdd value" });
+        if (websiteAdd == "")
+            return res.status(400).send({ status: false, message: "Please Enter websiteAdd value" });
+
+        if(!validation.validateWebsite(websiteAdd))
+            return res.status(400).send({ status: false, message: "please provide valid website" });
+
         }
 
         if (address1) {
             if (typeof (address1) != "string")
                 return res.status(400).send({ status: false, message: "address1 should be in String" });
+            
+            address1 = updateData.address1 = address1.trim();
 
             if (address1 == "")
                 return res.status(400).send({ status: false, message: "Please Enter address1 value" });
@@ -798,6 +950,8 @@ const updateCompanyDetails = async (req, res) => {
         if (address2) {
             if (typeof (address2) != "string")
                 return res.status(400).send({ status: false, message: "address2 should be in String" });
+            
+            address2 = updateData.address2 = address2.trim();
 
             if (address2 == "")
                 return res.status(400).send({ status: false, message: "Please Enter address2 value" });
@@ -806,6 +960,7 @@ const updateCompanyDetails = async (req, res) => {
         if (country) {
             if (typeof (country) != "string")
                 return res.status(400).send({ status: false, message: "country should be in String" });
+            country = updateData.country = country.trim();
 
             if (country == "")
                 return res.status(400).send({ status: false, message: "Please Enter country value" });
@@ -814,6 +969,7 @@ const updateCompanyDetails = async (req, res) => {
         if (state) {
             if (typeof (state) != "string")
                 return res.status(400).send({ status: false, message: "state should be in String" });
+                country = updateData.country = country.trim();
 
             if (state == "")
                 return res.status(400).send({ status: false, message: "Please Enter state value" });
@@ -821,35 +977,52 @@ const updateCompanyDetails = async (req, res) => {
 
         if (pinCode) {
             if (typeof (pinCode) != "number")
-                return res.status(400).send({ status: false, message: "pinCode should be in number" });
-
+            return res.status(400).send({ status: false, message: "pinCode should be in number" });
+        
             if (pinCode == "")
                 return res.status(400).send({ status: false, message: "Please Enter pinCode value" });
+            
+            if (!validation.validatePincode(pinCode)) return res.status(400).send({ status: false, message: "please provide valid  pincode" })
         }
 
 
         if (facebook) {
             if (typeof (facebook) != "string")
                 return res.status(400).send({ status: false, message: "facebook should be in String" });
+            facebook = updateData.facebook = facebook.trim();
 
             if (facebook == "")
                 return res.status(400).send({ status: false, message: "Please Enter facebook value" });
+            
+            if (!validation.validateFacebook(facebook)) 
+                return res.status(400).send({ status: false, message: "please provide valid  facebook link" })
+            
         }
 
         if (linkedIn) {
             if (typeof (linkedIn) != "string")
                 return res.status(400).send({ status: false, message: "linkedIn should be in String" });
+            linkedIn = updateData.linkedIn = linkedIn.trim();
 
             if (linkedIn == "")
                 return res.status(400).send({ status: false, message: "Please Enter linkedIn value" });
-        }
+        
+            if (!validation.validateLinkedIn(linkedIn)) 
+                return res.status(400).send({ status: false, message: "please provide valid  linkeIn link" })
+            
+            }
 
         if (twitter) {
             if (typeof (twitter) != "string")
                 return res.status(400).send({ status: false, message: "twitter should be in String" });
+            twitter = updateData.twitter = twitter.trim();
 
             if (twitter == "")
                 return res.status(400).send({ status: false, message: "Please Enter twitter value" });
+        
+            if (!validation.validateTwitter(twitter)) 
+                return res.status(400).send({ status: false, message: "please provide valid  twitter link" })
+            
         }
         clientId = updateData.clientId = companyId;
         let createdData = await companyUpdateModel.create(updateData);
@@ -874,6 +1047,8 @@ const updatePersonalDetails = async (req, res) => {
         if (title) {
             if (typeof (title) != "string")
                 return res.status(400).send({ status: false, message: "title should be in String" });
+            
+            title = updateData.title = title.trim();
 
             if (title == "")
                 return res.status(400).send({ status: false, message: "Please Enter title value" });
@@ -881,6 +1056,8 @@ const updatePersonalDetails = async (req, res) => {
         if (firstName) {
             if (typeof (firstName) != "string")
                 return res.status(400).send({ status: false, message: "firstName should be in String" });
+            
+            firstName = updateData.firstName = firstName.trim();
 
             if (firstName == "")
                 return res.status(400).send({ status: false, message: "Please Enter firstName value" });
@@ -888,6 +1065,8 @@ const updatePersonalDetails = async (req, res) => {
         if (surName) {
             if (typeof (surName) != "string")
                 return res.status(400).send({ status: false, message: "surName should be in String" });
+        
+            surName = updateData.surName = surName.trim();
 
             if (surName == "")
                 return res.status(400).send({ status: false, message: "Please Enter surName value" });
@@ -896,6 +1075,7 @@ const updatePersonalDetails = async (req, res) => {
         if (role) {
             if (typeof (role) != "string")
                 return res.status(400).send({ status: false, message: "role should be in String" });
+            role = updateData.role = role.trim();
 
             if (role == "")
                 return res.status(400).send({ status: false, message: "Please Enter role value" });
@@ -903,15 +1083,20 @@ const updatePersonalDetails = async (req, res) => {
 
         if (phoneNo) {
             if (typeof (phoneNo) != "number")
-                return res.status(400).send({ status: false, message: "phoneNo should be in number" });
+            return res.status(400).send({ status: false, message: "phoneNo should be in number" });
 
-            if (phoneNo == "")
-                return res.status(400).send({ status: false, message: "Please Enter phoneNo value" });
+        if (phoneNo == "")
+            return res.status(400).send({ status: false, message: "Please Enter phoneNo value" });
+
+        if (!validation.validateMobileNo(phoneNo))
+            return res.status(400).send({ status: false, message: "please provide valid 10 digit Phone Number" });
         }
 
         if (address1) {
             if (typeof (address1) != "string")
                 return res.status(400).send({ status: false, message: "address1 should be in String" });
+            
+            address1 = updateData.address1 = address1.trim();
 
             if (address1 == "")
                 return res.status(400).send({ status: false, message: "Please Enter address1 value" });
@@ -920,6 +1105,8 @@ const updatePersonalDetails = async (req, res) => {
         if (address2) {
             if (typeof (address2) != "string")
                 return res.status(400).send({ status: false, message: "address2 should be in String" });
+            
+            address2 = updateData.address2 = address2.trim();
 
             if (address2 == "")
                 return res.status(400).send({ status: false, message: "Please Enter address2 value" });
@@ -928,6 +1115,7 @@ const updatePersonalDetails = async (req, res) => {
         if (country) {
             if (typeof (country) != "string")
                 return res.status(400).send({ status: false, message: "country should be in String" });
+            country = updateData.country = country.trim();
 
             if (country == "")
                 return res.status(400).send({ status: false, message: "Please Enter country value" });
@@ -936,6 +1124,7 @@ const updatePersonalDetails = async (req, res) => {
         if (state) {
             if (typeof (state) != "string")
                 return res.status(400).send({ status: false, message: "state should be in String" });
+                country = updateData.country = country.trim();
 
             if (state == "")
                 return res.status(400).send({ status: false, message: "Please Enter state value" });
@@ -943,10 +1132,12 @@ const updatePersonalDetails = async (req, res) => {
 
         if (pinCode) {
             if (typeof (pinCode) != "number")
-                return res.status(400).send({ status: false, message: "pinCode should be in number" });
-
+            return res.status(400).send({ status: false, message: "pinCode should be in number" });
+        
             if (pinCode == "")
                 return res.status(400).send({ status: false, message: "Please Enter pinCode value" });
+            
+            if (!validation.validatePincode(pinCode)) return res.status(400).send({ status: false, message: "please provide valid  pincode" })
         }
         // let updatedData = await clientModel.findByIdAndUpdate({ companyId }, { $set: { title: title, firstName: firstName, role: role, phoneNo: phoneNo, address1: address1, address2: address2, address3: address3, address4: address4, country: country, state: state, pinCode: pinCode } }, { new: true });
         // return res.status(200).send({ status: true, message: "data updated successfully", data: updatedData })
@@ -961,9 +1152,64 @@ const updatePersonalDetails = async (req, res) => {
     }
 }
 
+const marketingDetails = async (req,res)=>{
+    try {
+        let companyId = req.params.clientId;
+        let marketingInfo = req.body;
+        let {emails,posts,calls,campaigns,awards,weeklyBullets, eventUpdates,magzine,newsLetters,sponsorship}= marketingInfo;
+        let companyData = await clientModel.findById(companyId);
+        if (!companyData) return res.status(404).send({ status: false, message: "no data found " })
+       
+        if (emails) {
+            if (typeof (emails) != "boolean")
+                return res.status(400).send({ status: false, message: "emails should be in boolean" });
+        }
+        if (posts) {
+            if (typeof (posts) != "boolean")
+                return res.status(400).send({ status: false, message: "posts should be in boolean" });
+        }
+        if (calls) {
+            if (typeof (calls) != "boolean")
+                return res.status(400).send({ status: false, message: "calls should be in boolean" });
+        }
+        if (campaigns) {
+            if (typeof (campaigns) != "boolean")
+                return res.status(400).send({ status: false, message: "campaigns should be in boolean" });
+        }
+        if (awards) {
+            if (typeof (awards) != "boolean")
+                return res.status(400).send({ status: false, message: "awards should be in boolean" });
+        }
+        if (weeklyBullets) {
+            if (typeof (weeklyBullets) != "boolean")
+                return res.status(400).send({ status: false, message: "weeklyBullets should be in boolean" });
+        }
+        if (eventUpdates) {
+            if (typeof (eventUpdates) != "boolean")
+                return res.status(400).send({ status: false, message: "eventUpdates should be in boolean" });
+        }
+        if (sponsorship) {
+            if (typeof (sponsorship) != "boolean")
+                return res.status(400).send({ status: false, message: "sponsorship should be in boolean" });
+        }
+        if (magzine) {
+            if (typeof (magzine) != "boolean")
+                return res.status(400).send({ status: false, message: "magzine should be in boolean" });
+        }
+        if (newsLetters) {
+            if (typeof (newsLetters) != "boolean")
+                return res.status(400).send({ status: false, message: "newsLetters should be in boolean" });
+        }
+        
+        let dataCreated = await clientMarketingModel.create(marketingInfo);
+        res.status(200).send({status:true, message:"marketing Data", data:dataCreated})
+
+    } catch (error) {
+        return res.status(500).send({ status: false, message: error.message })
+    }
+}
 
 
 
 
-
-module.exports = { createClient, loginClient, logoutClient, getCompanyDetails, getClientPersonalInfo, changePassword, commercialDir, updateCompanyDetails, updatePersonalDetails };
+module.exports = { createClient, loginClient,forgotPasswordClient,resetPasswordClient, logoutClient, getCompanyDetails, getClientPersonalInfo, changePassword, commercialDir, updateCompanyDetails, updatePersonalDetails,marketingDetails };

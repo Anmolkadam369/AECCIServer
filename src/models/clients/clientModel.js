@@ -131,11 +131,6 @@ const clientSchema = new mongoose.Schema({
         required:true,
         trim : true
     },
-    branchName :{
-        type:String,
-        required:true,
-        trim : true
-    },
     throughEmail:{
         type: Boolean,
         trim:true

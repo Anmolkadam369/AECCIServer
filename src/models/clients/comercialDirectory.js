@@ -22,7 +22,7 @@ const commercialDirectorySchema = new mongoose.Schema({
         trim:true
     },
     establishmentYear:{
-        type:String,
+        type:Number,
         required:true,
         trim:true
     },
