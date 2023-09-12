@@ -1,6 +1,7 @@
 
 
-let mongoose = require('mongoose')
+let mongoose = require('mongoose');
+const masterUpdateModel = require("../../models/masterupdateModel")
 
 
 
@@ -66,5 +67,37 @@ const loginMaster = async (req, res) => {
   }
 }
 
+const updateTasks = async (req,res)=>{
+  try{
+    let data = req.body;
+    let {taskName, taskAssignedTo}=data;
+    
+    if (!taskName)
+      return res.status(400).send({ status: false, message: "taskName is mandatory" });
 
-module.exports = { loginMaster }
+    if (typeof taskName != "string")
+      return res.status(400).send({ status: false, message: "please provide taskName in string " });
+
+    taskName = data.taskName = taskName.trim();
+    if (taskName == "")
+      return res.status(400).send({ status: false, message: "Please provide taskName value" });
+  //------------------------------------------------------------------------------
+    if (!taskAssignedTo)
+      return res.status(400).send({ status: false, message: "taskAssignedTo is mandatory" });
+    if (!Array.isArray(taskAssignedTo))
+      return res.status(400).send({ status: false, message: "please provide taskAssignedTo in array " });
+    
+    if (taskAssignedTo == "")
+      return res.status(400).send({ status: false, message: "Please provide taskAssignedTo value" });
+  
+    let findDataAndUpdate = await masterUpdateModel.findOneAndUpdate({taskName:taskName},{$set:{taskAssignedTo:taskAssignedTo}},{new:true});
+    if(findDataAndUpdate) return  res.status(200).send({status:true, message:"data Updated", data:findDataAndUpdate});
+    let createdTasks = await masterUpdateModel.create(data);
+    return res.status(201).send({status:true, message:"data created", data:createdTasks});
+    }
+  catch(error){
+    return res.status(500).send({ status: false, message: error.message })
+  }
+}
+
+module.exports = { loginMaster,updateTasks }

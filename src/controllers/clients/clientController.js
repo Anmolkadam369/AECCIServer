@@ -426,7 +426,7 @@ const createClient = async (req, res) => {
 
 const loginClient = async (req, res) => {
     try {
-        let loginData = req.body;
+        let changePasswordInfo = req.body;
         let { email, password } = loginData;
         //________________________________________________________
         if (!email)
@@ -598,6 +598,33 @@ const transporter = nodemailer.createTransport({
     return res.json({ message: 'Password reset successful' });
   }
 
+
+  const apporveMail = async (req,res)=>{
+      try {
+      let emailData = req.body;
+      let {email} = emailData;
+      if (!email)
+        return res.status(400).send({ status: false, message: "email is mandatory" });
+        console.log(typeof(email))
+      if(typeof(email) != "string"){
+        return res.status(400).send({status: false, message:" please send proper email"})
+      }
+      email = emailData.email = email.trim().toLowerCase();
+      if(email == "")
+        return res.status(400).send({status: false, message:" please send proper email"})
+      if(!validation.validateEmail(email)) return res.status(400).json({ valid: false, message: 'Invalid email.' });
+        let foundData = await clientModel.findOne({email:email, approved:true})
+        if(!foundData) return res.status(400).send({status: false, message:"Not Authorized to proceed !!!"})
+        return res.status(200).send({status:true, message:"verified Email"})
+  
+      } catch (error) {
+       return res.status(500).send({ status: false, message: error.message })
+      }
+  }
+
+
+
+
 const logoutClient = async (req,res)=>{
     try{
         return res.status(200).send({ status: true, message: "logged out successfully !!!" });
@@ -660,7 +687,7 @@ const changePassword = async (req, res) => {
         if (currentPassword == "")
             return res.status(400).send({ status: false, message: "Please Enter currentPassword value" });
         
-            currentPassword = loginData.currentPassword = currentPassword.trim();
+            currentPassword = changePasswordInfo.currentPassword = currentPassword.trim();
 
         let isClientExists = await clientModel.findById(clientId);
         if (!isClientExists)
@@ -679,10 +706,11 @@ const changePassword = async (req, res) => {
         if (typeof (newPassword) != "string")
             return res.status(400).send({ status: false, message: "newPassword should be in String" });
         
-            newPassword = loginData.newPassword = newPassword.trim();
+            newPassword = changePasswordInfo.newPassword = newPassword.trim();
 
         if (newPassword == "")
             return res.status(400).send({ status: false, message: "Please Enter newPassword value" });
+            if(!validation.validatePassword(newPassword)) return res.status(400).send({ status: false, message: "8-15 characters, one lowercase letter, one number and maybe one UpperCase & one special character" });
 
         let hashingNewPassword = bcrypt.hashSync(newPassword, 10);
         changePasswordInfo.newPassword = hashingNewPassword;
@@ -693,10 +721,11 @@ const changePassword = async (req, res) => {
         if (typeof (confirmPassword) != "string")
             return res.status(400).send({ status: false, message: "confirmPassword should be in String" });
             
-            confirmPassword = loginData.confirmPassword = confirmPassword.trim();
+            confirmPassword = changePasswordInfo.confirmPassword = confirmPassword.trim();
 
         if (confirmPassword == "")
             return res.status(400).send({ status: false, message: "Please Enter confirmPassword value" });
+            if(!validation.validatePassword(confirmPassword)) return res.status(400).send({ status: false, message: "8-15 characters, one lowercase letter, one number and maybe one UpperCase & one special character" });
 
         let hashingConfirmPassword = bcrypt.hashSync(confirmPassword, 10);
         changePasswordInfo.confirmPassword = hashingConfirmPassword;
@@ -846,7 +875,7 @@ const updateCompanyDetails = async (req, res) => {
     try {
         let companyId = req.params.clientId;
         let updateData = req.body;
-        let { isApproved,companyName, numberOfEmployees, clientId, businessCategory, howDidYouKnowAboutUs, telephoneNo, email, websiteAdd, address1, address2, country, state, pinCode, facebook, linkedIn, twitter } = updateData;
+        let { isApproved,companyName,subCategory,  numberOfEmployees, clientId, businessCategory, howDidYouKnowAboutUs, telephoneNo, email, websiteAdd, address1, address2, country, state, pinCode, facebook, linkedIn, twitter } = updateData;
         let companyData = await clientModel.findById(companyId);
         if (!companyData) return res.status(404).send({ status: false, message: "no data found " })
         
@@ -879,13 +908,13 @@ const updateCompanyDetails = async (req, res) => {
                 return res.status(400).send({ status: false, message: "Please Enter businessCategory value" });
         }
 
-        // if (subCatagory) {
-        //     if (typeof (subCatagory) != "string")
-        //         return res.status(400).send({ status: false, message: "subCatagory should be in String" });
+        if (subCatagory) {
+            if (typeof (subCatagory) != "string")
+                return res.status(400).send({ status: false, message: "subCatagory should be in String" });
 
-        //     if (subCatagory == "")
-        //         return res.status(400).send({ status: false, message: "Please Enter subCatagory value" });
-        // }
+            if (subCatagory == "")
+                return res.status(400).send({ status: false, message: "Please Enter subCatagory value" });
+        }
 
         if (howDidYouKnowAboutUs) {
             if (typeof (howDidYouKnowAboutUs) != "string")
@@ -1156,10 +1185,14 @@ const marketingDetails = async (req,res)=>{
     try {
         let companyId = req.params.clientId;
         let marketingInfo = req.body;
-        let {emails,posts,calls,campaigns,awards,weeklyBullets, eventUpdates,magzine,newsLetters,sponsorship}= marketingInfo;
+        let {companyName,website,companyEmail,telephone,phone,emails,posts,calls,campaigns,awards,weeklyBullets, eventUpdates,magzine,newsLetters,sponsorship}= marketingInfo;
         let companyData = await clientModel.findById(companyId);
         if (!companyData) return res.status(404).send({ status: false, message: "no data found " })
-       
+        companyName = marketingInfo.companyName = companyData.companyName;
+        website = marketingInfo.website = companyData.websiteAdd;
+        telephone = marketingInfo.telephone = companyData.telephoneNo;
+        phone= marketingInfo.phone = companyData.phoneNo;
+        companyEmail = marketingInfo.companyEmail = companyData.email;
         if (emails) {
             if (typeof (emails) != "boolean")
                 return res.status(400).send({ status: false, message: "emails should be in boolean" });
@@ -1212,4 +1245,4 @@ const marketingDetails = async (req,res)=>{
 
 
 
-module.exports = { createClient, loginClient,forgotPasswordClient,resetPasswordClient, logoutClient, getCompanyDetails, getClientPersonalInfo, changePassword, commercialDir, updateCompanyDetails, updatePersonalDetails,marketingDetails };
+module.exports = { createClient, loginClient,forgotPasswordClient,resetPasswordClient,apporveMail, logoutClient, getCompanyDetails, getClientPersonalInfo, changePassword, commercialDir, updateCompanyDetails, updatePersonalDetails,marketingDetails };

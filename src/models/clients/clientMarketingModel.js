@@ -1,6 +1,26 @@
 const mongoose = require('mongoose')
 
 const clientMarketingSchema = new mongoose.Schema({
+    companyName:{
+        type:String,
+        required:true
+    },
+    website:{
+        type:String,
+        required:true
+    },
+    companyEmail:{
+        type:String,
+        required:true
+    },
+    telephone:{
+        type:String,
+        required:true
+    },
+    phone:{
+        type:Number,
+        required:true
+    },
     emails:{
         type:Boolean,
         default:false,

@@ -65,6 +65,10 @@ const clientSchema = new mongoose.Schema({
         required:true,
         trim : true
     },
+    subCategory:{
+        type:String,
+        trim : true
+    },
     howDidYouKnowAboutUs:{
         type:String,
         required:true,
@@ -163,6 +167,46 @@ const clientSchema = new mongoose.Schema({
         type:Boolean
     },
     reasonForNotchoosing:{
+        type:String,
+        trim :true
+    },
+    membershipForm:{
+        type:String,
+        trim :true
+    },
+    requestLetter:{
+        type:String,
+        trim :true
+    },
+    indemnityBond:{
+        type:String,
+        trim :true
+    },
+    gstPan:{
+        type:String,
+        trim :true
+    },
+    IECLicence:{
+        type:String,
+        trim :true
+    },
+    registrationCertificate:{
+        type:String,
+        trim :true
+    },
+    certOfIncoporation:{
+        type:String,
+        trim :true
+    },
+    copyMOA:{
+        type:String,
+        trim :true
+    },
+    authsignotary:{
+        type:String,
+        trim :true
+    },
+    passportPhoto:{
         type:String,
         trim :true
     },

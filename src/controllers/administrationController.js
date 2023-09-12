@@ -519,5 +519,3 @@ const deleteEmployee = async (req, res)=>{
 }
 
 module.exports = {registerAdministration,loginAdministration,loginHR,getMyaccount,getEmpData,getWantedAdministrationList, updateInfo,forgotPasword,resetPassword,deleteEmployee}
-
-

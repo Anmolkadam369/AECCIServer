@@ -40,8 +40,11 @@ router.get("/loginMaster", masterController.loginMaster);
 router.post("/registerAdmin", aws.awsLinkProfile, adminController.registerAdmin);
 router.post("/loginAdmin", adminController.loginAdmin);
 router.get("/getAdminDetails/:adminId",adminAuth.authentication,adminAuth.authorization, adminController.getAdminDetails)  //myaccount
+
+//clientAdmin
 router.get("/getCompanyDetailsForAdmin/:adminId",adminAuth.authentication,adminAuth.authorization,adminController.getCompanyDetailsForAdmin)
 router.post("/filledByAdmin/:adminId/:companyId",adminAuth.authentication,adminAuth.authorization, adminController.filledByAdmin) 
+
 router.post("/adminApprovedComDir/:adminId/:comDirId",adminAuth.authentication,adminAuth.authorization, adminController.adminApprovedComDir);
 router.post("/adminApprovedRequest/:adminId/:changePasswordId",adminAuth.authentication,adminAuth.authorization, adminController.adminChangedPassword);
 router.get("/getCompanyUpdateForAdmin/:adminId",adminAuth.authentication,adminAuth.authorization,adminController.getCompanyUpdateForAdmin);
@@ -80,7 +83,7 @@ router.post("/createClientEmail", clientEmailController.createClientEmail);
 router.post("/inputNumberCreated", clientGSTNoController.inputNumberCreated); 
 
 //recommendationLetter
-router.post("/createRecommendationLetter/:companyId",aws.recoDoc,recomendationLetterController.createRecomendationLetter);
+router.post("/createRecommendationLetter/:companyId",clientAuth.authentication,clientAuth.authorization,aws.recoDoc,recomendationLetterController.createRecomendationLetter);
 router.get("/viewData/:id", recomendationLetterController.viewData);
 router.put("/updateData/:id", recomendationLetterController.updateData);
 
@@ -173,4 +176,3 @@ module.exports = router;
 // router.post("/extendedTime/:employeeId/:normalEmployee",auth.authentication,auth.authorization,employeeJdController.extendTime);
 // // router.get("/getWantedAdministrationList/:employeeId/:normalEmployee",auth.authentication,auth.authorizationForHr,employeeJdController.getWantedAdministrationList);
 // // router.get("/getWantedListByDate/:employeeId/:normalEmployee",auth.authentication,auth.authorizationForHr,employeeJdController.getWantedListByDate)
-

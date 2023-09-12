@@ -50,6 +50,10 @@ const clientCompSchema = new mongoose.Schema({
         // required:true,
         trim : true
     },
+    subCategory:{
+        type:String,
+        trim : true
+    },
     howDidYouKnowAboutUs:{
         type:String,
         // required:true,
