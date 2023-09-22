@@ -39,11 +39,13 @@ const clientSchema = new mongoose.Schema({
     },
     address3:{
         type:String,
-        trim : true
+        trim : true,
+        default:""
     },
     address4:{
         type:String,
-        trim : true
+        trim : true,
+        default:""
     },
     country:{
         type:String,

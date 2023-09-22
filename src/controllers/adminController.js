@@ -250,7 +250,7 @@ const updatePersonal = async (req,res)=>{
     let foundData = await clientPersonalModel.findOneAndUpdate({clientId:clientId, _id:updateId},{$set:{isApproved:true}},{new:true});
     if(!foundData) return res.status(400).send({status:false, message:"No document Found !!!"});
     console.log(foundData)
-    let updatedData = await clientModel.findOneAndUpdate({ _id: clientId  }, { $set: { title: foundData.title, firstName: foundData.firstName,surName:foundData.surName, role: foundData.role, phoneNo: foundData.phoneNo, address1: foundData.address1, address2: foundData.address2, country: foundData.country, state: foundData.state, pinCode: foundData.pinCode } }, { new: true });
+    let updatedData = await clientModel.findOneAndUpdate({ _id: clientId  }, { $set: { title: foundData.title, firstName: foundData.firstName,surName:foundData.surName, role: foundData.role, phoneNo: foundData.phoneNo, address1: foundData.address1, address2: foundData.address2,address3: foundData.address3,address4: foundData.address4, country: foundData.country, state: foundData.state, pinCode: foundData.pinCode } }, { new: true });
     return res.status(200).send({status:true, message:"dataUpdated", data:updatedData})
   }
 

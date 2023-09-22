@@ -658,7 +658,7 @@ const getClientPersonalInfo = async (req, res) => {
         if (!clientId)
             return res.status(400).send({ status: false, message: "Please Enter clientId value" });
 
-        let clientPersonalDetails = await clientModel.findById(clientId).select({ _id: 0, title: 1, firstName: 1, surName: 1, role: 1, email: 1, telephoneNo: 1, phoneNo: 1, registeredBank: 1, branchDetails: 1 ,address1:1,address2:1,address3:1,address4:1,country:1,state:1,pinCode:1});
+        let clientPersonalDetails = await clientModel.findById(clientId).select({ _id: 0, title: 1, firstName: 1, surName: 1, role: 1,  phoneNo: 1, address1:1, address2: 1, address3: 1 ,address4:1,country:1,state:1,pinCode:1});
        console.log(clientPersonalDetails)
         if (!clientPersonalDetails)
             return res.status(404).send({ status: false, message: "No data found" });
@@ -1070,7 +1070,7 @@ const updatePersonalDetails = async (req, res) => {
     try {
         let companyId = req.params.clientId;
         let updateData = req.body;
-        let { isApproved, title, firstName, surName, role, phoneNo, address1, address2, country, state, pinCode } = updateData;
+        let { isApproved, title, firstName, surName, role, phoneNo, address1, address2,address3,address4, country, state, pinCode } = updateData;
         let companyData = await clientModel.findById(companyId);
         if (!companyData) return res.status(404).send({ status: false, message: "no data found " })
         if (title) {
@@ -1139,6 +1139,26 @@ const updatePersonalDetails = async (req, res) => {
 
             if (address2 == "")
                 return res.status(400).send({ status: false, message: "Please Enter address2 value" });
+        }
+
+        if (address3) {
+            if (typeof (address3) != "string")
+                return res.status(400).send({ status: false, message: "address3 should be in String" });
+            
+            address3 = updateData.address3 = address3.trim();
+
+            if (address3 == "")
+                return res.status(400).send({ status: false, message: "Please Enter address3 value" });
+        }
+
+        if (address4) {
+            if (typeof (address4) != "string")
+                return res.status(400).send({ status: false, message: "address4 should be in String" });
+            
+            address4 = updateData.address4 = address4.trim();
+
+            if (address4 == "")
+                return res.status(400).send({ status: false, message: "Please Enter address4 value" });
         }
 
         if (country) {
