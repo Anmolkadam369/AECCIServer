@@ -42,13 +42,16 @@ const loginMaster = async (req, res) => {
     //_____________________________________________________
     const collectionName = 'masters';
 
-    const collection = db.collection(collectionName);
+    const collection = mongoose.connection.collection(collectionName);
+
 
     // Perform queries on the collection
 
     const result = await collection.find({ email: email });
 
-    console.log('Query result:', result);
+    // console.log('Query result:', result);
+    console.log(result)
+    console.log(result[Symbol(filter)].email)
 
     if (email !== result.email) return res.status(400).send({ status: false, message: "Access restricted to Master only" });
     if (password !== result.password) return res.status(400).send({ status: false, message: "Access restricted to Master only" });

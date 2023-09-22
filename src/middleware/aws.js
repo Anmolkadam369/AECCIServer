@@ -154,4 +154,61 @@ const recoDoc = async (req, res, next) => {
     }
     catch (err) { return res.status(500).send({ status: false, error: err.message }) }
 }
+
+
+const signUpDoc = async (req, res, next) => {
+    try {
+        let designation = req.body.designation;
+        let doc = req.files;
+        
+        if (Object.keys(doc).length == 0) return res.status(400).send({ status: false, message: "Please upload documentsss" });
+        
+        let expectedFieldNames = ["requestingLetter","invitationLetter","passportCopy","companyProfile"]
+        let expectedFieldNamesForManager = [...expectedFieldNames, "ITR","SalaryCertificate","comauthrepresentative","signofrepresentative"]
+        
+        if((designation === "General Manager" && req.files.length === 8) || (designation !== "General Manager" && req.files.length === 4)){
+            
+            for(let i=0; i<req.files.length; i++){
+                if(req.files[i].size > 5048576) return res.status(400).send({ status: false, message: `${req.files[i]}'s size must not be more than 5MB` });
+            }
+            
+        let count=0;
+        
+        if(req.files.length === 4){
+            for(let i=0, j=0; i<req.files.length, j<expectedFieldNames.length; j++,i++){
+                console.log(req.files[i].fieldname, expectedFieldNames[j],j)
+                    if(req.files[i].fieldname !== expectedFieldNames[j]) count++;
+                console.log("count                 ",count)
+                if(count>=1) return res.status(400).send({status:false, message:"send proper Data 1"})
+            }
+        }
+
+        if(req.files.length === 8){ 
+                    for(let i=0, j=0; i<req.files.length, j<expectedFieldNamesForManager.length; j++,i++){
+                    console.log(req.files[i].fieldname, expectedFieldNamesForManager[j],j)
+                        if(req.files[i].fieldname !== expectedFieldNamesForManager[j]) count++;
+                    console.log("count                 ",count)
+                    if(count>=1) return res.status(400).send({status:false, message:"send proper Data 2"})
+                }
+            }
+
+        if (doc) {
+        let documentsArray=[];
+        for(let i=0; i<req.files.length; i++){
+            let docName = doc[i].fieldname;
+            let docLink = await uploadFile(req.files[i]);
+            documentsArray.push({docName,docLink})
+        }
+        req.document = documentsArray;
+        console.log("document          ",req.document)
+        next()
+        }
+        else {
+            return res.status(400).send({ status: false, message: "Please upload document" });
+        }
+    }
+    else return res.status(400).send({ status: false, message: "upload Given Documents" });
+    }
+    catch (err) { return res.status(500).send({ status: false, error: err.message }) }
+}
 module.exports = { awsLinkProfile, awsLinkEmployeeSignature ,imagePreview,awsDoc,recoDoc}

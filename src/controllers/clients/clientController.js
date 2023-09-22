@@ -426,7 +426,7 @@ const createClient = async (req, res) => {
 
 const loginClient = async (req, res) => {
     try {
-        let changePasswordInfo = req.body;
+        let loginData = req.body;
         let { email, password } = loginData;
         //________________________________________________________
         if (!email)
@@ -454,8 +454,8 @@ const loginClient = async (req, res) => {
 
 
         //regex password
-        if (!validation.validatePassword(password))
-        return res.status(400).send({ status: false, message: "8-15 characters, one lowercase letter, one number and maybe one UpperCase & one special character" });
+        // if (!validation.validatePassword(password))
+        // return res.status(400).send({ status: false, message: "8-15 characters, one lowercase letter, one number and maybe one UpperCase & one special character" });
 
         //Encrypting password
         //   let hashing = bcrypt.hashSync(password, 10);
@@ -470,7 +470,7 @@ const loginClient = async (req, res) => {
             return res.status(404).send({ status: false, message: "password doesn't match" });
         console.log(isClientExists._id)
         let token = jwt.sign(
-            { clientId: isClientExists._id, exp: Math.floor(Date.now() / 1000) + 86400 }, "aeccisecurity");
+            { clientId: isClientExists._id, exp: Math.floor(Date.now() / 1000) + 864000 }, "aeccisecurity");
         let tokenInfo = { userId: isClientExists._id, token: token };
 
 
@@ -658,7 +658,7 @@ const getClientPersonalInfo = async (req, res) => {
         if (!clientId)
             return res.status(400).send({ status: false, message: "Please Enter clientId value" });
 
-        let clientPersonalDetails = await clientModel.findById(clientId).select({ _id: 0, title: 1, firstName: 1, surName: 1, role: 1, email: 1, password: 1, confirmPassword: 1, telephoneNo: 1, phoneNo: 1, registeredBank: 1, branchDetails: 1 });
+        let clientPersonalDetails = await clientModel.findById(clientId).select({ _id: 0, title: 1, firstName: 1, surName: 1, role: 1, email: 1, telephoneNo: 1, phoneNo: 1, registeredBank: 1, branchDetails: 1 ,address1:1,address2:1,address3:1,address4:1,country:1,state:1,pinCode:1});
        console.log(clientPersonalDetails)
         if (!clientPersonalDetails)
             return res.status(404).send({ status: false, message: "No data found" });

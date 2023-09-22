@@ -37,7 +37,7 @@ const authorization = async (req, res, next) => {
 
         // Check if paramUserId is provided and is a valid ObjectId
         if (paramUserId) {
-            let userData = await administrationModel.findOne({administrationId : paramUserId});
+            let userData = await administrationModel.findOne({_id : paramUserId});
             console.log(userData)
 
             // If the user with the provided userId does not exist

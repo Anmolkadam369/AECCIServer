@@ -255,4 +255,7 @@ const sendingMailToUser = async (req, res) => {
 
 }
 
+
+
+
 module.exports = { createExportWing, captcha, verify, previewData, sendingMailToUser }

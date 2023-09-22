@@ -34,12 +34,13 @@ console.log(`api key ${process.env.API_KEY}`)
 })
 
 //MASTER
-router.get("/loginMaster", masterController.loginMaster);
+router.post("/loginMaster", masterController.loginMaster);
+router.post("/updateTasks/:id",masterController.updateTasks)
 
 //ADMIN
 router.post("/registerAdmin", aws.awsLinkProfile, adminController.registerAdmin);
-router.post("/loginAdmin", adminController.loginAdmin);
-router.get("/getAdminDetails/:adminId",adminAuth.authentication,adminAuth.authorization, adminController.getAdminDetails)  //myaccount
+// router.post("/loginAdmin", adminController.loginAdmin);
+router.get("/getAdminDetails/:employeeId",auth.authentication,auth.authorization, adminController.getAdminDetails)  //myaccount
 
 //clientAdmin
 router.get("/getCompanyDetailsForAdmin/:adminId",adminAuth.authentication,adminAuth.authorization,adminController.getCompanyDetailsForAdmin)
