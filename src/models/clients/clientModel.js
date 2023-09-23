@@ -69,7 +69,8 @@ const clientSchema = new mongoose.Schema({
     },
     subCategory:{
         type:String,
-        trim : true
+        trim : true,
+        default:""
     },
     howDidYouKnowAboutUs:{
         type:String,
