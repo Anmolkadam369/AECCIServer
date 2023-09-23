@@ -640,7 +640,8 @@ const getCompanyDetails = async (req, res) => {
         if (!clientId)
             return res.status(400).send({ status: false, message: "Please Enter clientId value" });
 
-        let clientCompanyDetails = await clientModel.findById(clientId).select({ _id: 0, companyName: 1, GSTNo: 1, IECNo: 1, websiteAdd: 1, address1: 1, address2: 1, address3: 1, address4: 1, country: 1, state: 1, pinCode: 1, businessCategory: 1, howDidYouKnowAboutUs: 1 });
+        //let clientCompanyDetails = await clientModel.findById(clientId).select({ _id: 0, companyName: 1, GSTNo: 1, IECNo: 1, websiteAdd: 1, address1: 1, address2: 1, address3: 1, address4: 1, country: 1, state: 1, pinCode: 1, businessCategory: 1, howDidYouKnowAboutUs: 1 });
+        let clientCompanyDetails = await clientModel.findById(clientId);
         console.log(clientCompanyDetails)
         if (!clientCompanyDetails)
             return res.status(404).send({ status: false, message: "No data found" });
@@ -658,8 +659,9 @@ const getClientPersonalInfo = async (req, res) => {
         if (!clientId)
             return res.status(400).send({ status: false, message: "Please Enter clientId value" });
 
-        let clientPersonalDetails = await clientModel.findById(clientId).select({ _id: 0, title: 1, firstName: 1, surName: 1, role: 1,  phoneNo: 1, address1:1, address2: 1, address3: 1 ,address4:1,country:1,state:1,pinCode:1});
-       console.log(clientPersonalDetails)
+        //let clientPersonalDetails = await clientModel.findById(clientId).select({ _id: 0, title: 1, firstName: 1, surName: 1, role: 1,  phoneNo: 1, address1:1, address2: 1, address3: 1 ,address4:1,country:1,state:1,pinCode:1});
+       let clientPersonalDetails = await clientModel.findById(clientId);
+        console.log(clientPersonalDetails)
         if (!clientPersonalDetails)
             return res.status(404).send({ status: false, message: "No data found" });
 
