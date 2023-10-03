@@ -4,6 +4,7 @@ const wingsSchema = new mongoose.Schema({
     companyName:{
         type:String,
         required:true
+        
     },
     membershipNo:{
         type:String,

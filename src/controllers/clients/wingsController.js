@@ -4,6 +4,7 @@ const clientWingsModel = require("../../models/wingsModel");
 const nodemailer = require('nodemailer');
 const svgCaptcha = require('svg-captcha');
 const wingsModel = require('../../models/wingsModel');
+const conversationModel = require('../../models/conversationModel');
 
 let count = 1001;
 
@@ -255,7 +256,80 @@ const sendingMailToUser = async (req, res) => {
 
 }
 
+const conversation = async(req,res)=>{
+    try {
+        let data = req.body;
+        let {companyName, membershipNo,info} = data;
+
+        // if(!info) return res.status(400).send({status:false, message:"info should be there"});
+        // if(typeof info != 'array') return res.status(400).send({status:false, message:"info should be in string"});
+        // info = data.info = info.trim();
+        // if(info == "") return res.status(400).send({status:false, message:"info should be there"});
+
+        // if(!info.date) return res.status(400).send({status:false, message:"info.date should be there"});
+        // if(typeof info.date != 'string') return res.status(400).send({status:false, message:"info.date should be in string"});
+        // info.date = data.info.date = info.date.trim();
+        // if(info.date == "") return res.status(400).send({status:false, message:"info.date should be there"});
+
+        // if(!info.time) return res.status(400).send({status:false, message:"info.time should be there"});
+        // if(typeof info.time != 'string') return res.status(400).send({status:false, message:"info.time should be in string"});
+        // info.time = data.info.time = info.time.trim();
+        // if(info.time == "") return res.status(400).send({status:false, message:"info.time should be there"});
+
+        // if(!info.partyName) return res.status(400).send({status:false, message:"info.partyName should be there"});
+        // if(typeof info.partyName != 'string') return res.status(400).send({status:false, message:"info.partyName should be in string"});
+        // info.partyName = data.info.partyName = info.partyName.trim();
+        // if(info.partyName == "") return res.status(400).send({status:false, message:"info.partyName should be there"});
+        console.log("yes")
+        
+        // if(info.partyName != "AECCI Expert"){
+        //     let companyData = await clientModel.findOne({companyName:info.partyName});
+        //     if(!companyData) return res.status(400).send({status:false, message:"no data found"});
+        //     console.log(companyData)
+        //     companyName = data.companyName = companyData.companyName;
+        //     membershipNo = data.membershipNo = companyData.memberShipNo;
+        //     console.log(companyName, membershipNo)
+        // }
+
+        // if(!info.message) return res.status(400).send({status:false, message:"message should be there"});
+        // if(typeof info.message != 'string') return res.status(400).send({status:false, message:"message should be in string"});
+        // info.message = data.info.message = info.message.trim();
+        // if(info.message == "") return res.status(400).send({status:false, message:"message should be there"});
+        console.log("info                                 ",info, typeof info)
+        let foundData = await conversationModel.findOne({companyName:companyName, isDeleted:false})
+
+        let updateData= await conversationModel.findOneAndUpdate({companyName:companyName, isDeleted:false}, {$push: {info:info}},{new:true})
+        console.log(updateData)
+    //     if(foundData != null){
+    //         let updateMessages = await conversationModel.findOneAndUpdate(
+    //     { partyName: info.partyName, isDeleted: false },
+    //     { $push: { 'info.$.message': info.message } }, // Update the 'message' field inside 'info' array
+    //     { new: true }
+    // );
+    //     }
+        let dataCreated = await conversationModel.create(data);
+        console.log(dataCreated)
+        return res.status(200).send({status:true, message: "created message", data:dataCreated})
+
+    } catch (error) {
+        res.status(500).send({ status: false, message: error.message })
+    }
+}
 
 
+module.exports = { conversation,createExportWing, captcha, verify, previewData, sendingMailToUser }
 
-module.exports = { createExportWing, captcha, verify, previewData, sendingMailToUser }
+
+// const updatedBlogData = await blogModel.findOneAndUpdate(
+//     { _id: blogId },
+//     {
+//       $set: {
+//         title: data.title,
+//         body: data.body,
+//         isPublished: true,
+//         publishedAt: new Date(),
+//       },
+//       $push: { tags: data.tags, subcategory: data.subcategory },
+//     },
+//     { new: true }
+//     );

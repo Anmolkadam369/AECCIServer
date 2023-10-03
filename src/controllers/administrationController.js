@@ -7,7 +7,8 @@ const employeeJdModel = require("../models/employeeJdModel");
 const nodemailer = require('nodemailer');
 const crypto = require("crypto")
 require('dotenv').config();
-const forgotPasswordModel = require("../models/forgotPasswordModel")
+const forgotPasswordModel = require("../models/forgotPasswordModel");
+const masterupdateModel = require("../models/masterupdateModel");
 
 function generateRandomString(length) {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -189,6 +190,9 @@ console.log("email", email)
     console.log(passwordCompare);
   if(!passwordCompare) 
     return res.status(404).send({status:false, message:"password doesn't match"});
+    
+    let getTaskData = await masterupdateModel.findOne({email:empEmailId});
+    if(!getTaskData) getTaskData = "No task Assigned Yet By Master!!!";
     let token = jwt.sign(
       {administrationId : isAdministrationExist._id,  exp: Math.floor(Date.now() / 1000) + 86400}, "aeccisecurity");
      let tokenInfo = { userId: isAdministrationExist._id, token: token };
@@ -205,7 +209,7 @@ console.log("email", email)
             
       //__________________________________________________________________
       console.log("tokenInfo", tokenInfo)
-    return res.status(200).send({ status: true, message: `${isAdministrationExist.officerName} login successfully`, data:  isAdministrationExist, tokenInfo: tokenInfo});
+    return res.status(200).send({ status: true, message: `${isAdministrationExist.officerName} login successfully`, data:  isAdministrationExist,getTaskData:getTaskData, tokenInfo: tokenInfo});
 }
 catch(error){
   return res.status(500).send({status:false, message:error.message})

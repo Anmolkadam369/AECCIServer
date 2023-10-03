@@ -17,7 +17,8 @@ const auth = require("../middleware/auth");
 const aws = require("../middleware/aws")
 const clientAuth = require("../middleware/clientAuth")
 const adminAuth = require("../middleware/adminAuth")
-const superAdminAuth = require("../middleware/superadminAuth")
+const superAdminAuth = require("../middleware/superadminAuth");
+const wingsModel = require("../models/wingsModel");
 
 // const auth = require('../middlewares/auth')
 //const aws = require("../middlewares/awsLink");
@@ -99,6 +100,7 @@ router.post("/verify", wingsController.verify);
 router.get("/previewData/:wingsId",wingsController.previewData);
 // router.post("/getTickectNo/:wingsId", wingsController.generateTicketNo)
 router.post("/sendMail/:companyId/:wingsId",wingsController.sendingMailToUser)
+router.put("/createdMessage", wingsController.conversation );
 
 //Client B2B collaboration
 

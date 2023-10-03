@@ -73,27 +73,20 @@ const loginMaster = async (req, res) => {
 const updateTasks = async (req,res)=>{
   try{
     let data = req.body;
-    let {taskName, taskAssignedTo}=data;
+    let {empEmailId, profile,createJd,createEmp,viewEmpList,clientAdmin,clientSuperAdmin,updateCompany,updatePersonal,commercialDir,changePassword,payment,services,ecoAdmin,ecoSuperAdmin,membershipService,b2bRegistration,wings,exportWing,legalWing,hrSupportWing,professionalWing,businessSupportWing,womenWing,eventSeminarWing,arbitrationCenter,disputes,panelName,listOfAggreement,eventAndSeminar,eventBooking,chamberEvent,publications,viewPoint}=data;
     
-    if (!taskName)
-      return res.status(400).send({ status: false, message: "taskName is mandatory" });
+    if (!empEmailId)
+      return res.status(400).send({ status: false, message: "empEmailId is mandatory" });
 
-    if (typeof taskName != "string")
-      return res.status(400).send({ status: false, message: "please provide taskName in string " });
+    if (typeof empEmailId != "string")
+      return res.status(400).send({ status: false, message: "please provide empEmailId in string " });
 
-    taskName = data.taskName = taskName.trim();
-    if (taskName == "")
-      return res.status(400).send({ status: false, message: "Please provide taskName value" });
+    empEmailId = data.empEmailId = empEmailId.trim();
+    if (empEmailId == "")
+      return res.status(400).send({ status: false, message: "Please provide empEmailId value" });
   //------------------------------------------------------------------------------
-    if (!taskAssignedTo)
-      return res.status(400).send({ status: false, message: "taskAssignedTo is mandatory" });
-    if (!Array.isArray(taskAssignedTo))
-      return res.status(400).send({ status: false, message: "please provide taskAssignedTo in array " });
     
-    if (taskAssignedTo == "")
-      return res.status(400).send({ status: false, message: "Please provide taskAssignedTo value" });
-  
-    let findDataAndUpdate = await masterUpdateModel.findOneAndUpdate({taskName:taskName},{$set:{taskAssignedTo:taskAssignedTo}},{new:true});
+    let findDataAndUpdate = await masterUpdateModel.findOneAndUpdate({empEmailId:empEmailId},{$set:{createJd:createJd, createEmp:createEmp, viewEmpList:viewEmpList,clientAdmin:clientAdmin,clientSuperAdmin:clientSuperAdmin,updateCompany:updateCompany,updatePersonal:updatePersonal,commercialDir:commercialDir,changePassword:changePassword,payment:payment,b2bRegistration:b2bRegistration, membershipService:membershipService,ecoSuperAdmin:ecoSuperAdmin,ecoAdmin:ecoAdmin,exportWing:exportWing,legalWing:legalWing,hrSupportWing:hrSupportWing,professionalWing:professionalWing,businessSupportWing:businessSupportWing,womenWing:womenWing,eventSeminarWing:eventSeminarWing,disputes:disputes,panelName:panelName,listOfAggreement:listOfAggreement,eventBooking:eventBooking,chamberEvent:chamberEvent,viewPoint:viewPoint}},{new:true});
     if(findDataAndUpdate) return  res.status(200).send({status:true, message:"data Updated", data:findDataAndUpdate});
     let createdTasks = await masterUpdateModel.create(data);
     return res.status(201).send({status:true, message:"data created", data:createdTasks});
@@ -103,4 +96,4 @@ const updateTasks = async (req,res)=>{
   }
 }
 
-module.exports = { loginMaster,updateTasks }
+module.exports = { loginMaster,updateTasks } 
